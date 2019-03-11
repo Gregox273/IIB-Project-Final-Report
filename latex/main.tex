@@ -191,6 +191,47 @@ Gregory Brooks, gb510, Christ's College
       For the data collected in the experiment, the log-likelihood ratio was found to be around -24600.08; the negative value indicates that the measurements taken whilst the tone was playing were indeed more accurately described by the bimodal beta distribution, compared to the Laplace distribution of sensor noise. Computing this log-likelihood ratio could therefore be used as evidence to suggest whether an audio tone based transduction attack is in progress.
 
     \subsection{Derivation of Bimodal Beta Distribution} \label{Poster_Derivation}
+    Let T be a uniformly distributed random variable representing the time at which acceleration is sampled:
+    \begin{align}
+      T & \sim U\left(-\frac{\pi}{\omega}, \frac{\pi}{\omega}\right) \nonumber \\
+      f_T(t) & =
+        \begin{cases}
+          \frac{\omega}{2\pi} & -\frac{\pi}{\omega} \leq t \leq \frac{\pi}{\omega}\\
+          0 & \text{otherwise}
+        \end{cases}\\
+      F_T(t) & =
+        \begin{cases}
+          0 & t < -\frac{\pi}{\omega}\\
+          \frac{\omega (t + \pi / \omega)}{2\pi} & -\frac{\pi}{\omega} \leq t \leq \frac{\pi}{\omega}\\
+          1 & t > \frac{\pi}{\omega}
+        \end{cases}
+    \end{align}
+    Then let X = g(T) represent the acceleration value at time T. By considering the dynamics of the system, we know that:
+
+    \begin{equation}
+      g(t) = A \omega^2 sin(\omega t)
+    \end{equation}
+    where A is a frequency-dependent constant (equal to the product of quality factor and board displacement at resonance). We can also define a monotonically increasing function $h(x)$ as the inverse of $g(t)$:
+
+    \begin{equation}
+      h(x) = g^{-1}(x) = \frac{1}{\omega} arcsin \left(\frac{x}{A\omega^2}\right)
+    \end{equation}
+    \\
+    The cumulative distribution function for X can therefore be written in terms of the cumulative distribution function for T, accounting for the fact that g(t) is not monotonic:
+    \begin{equation}
+      F_X(x) = F_T(h(x)) + \Big(1 - F_T(\pi/\omega - h(x))\Big)
+    \end{equation}
+    \\
+    Taking the derivative results in the probability density function for X:
+    \begin{align}
+      f_X(x) & = \Big(f_T(h(x) - f_T(-h(x)))\Big) \frac{d(h(x))}{dx}\\
+      & =
+      \begin{cases}
+        \frac{1}{\pi \sqrt{A^2 \omega^4 - x^2}} & |x| \leq A \omega^2\\
+        0 & \text{otherwise}
+      \end{cases}
+    \end{align}
+
 
     \subsection{Poster}
       \textit{$\langle$ TODO: insert the poster into this report?$\rangle$}
