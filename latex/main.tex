@@ -3,8 +3,8 @@
 % 24cm \footskip 1cm
 \usepackage[british]{babel}
 \usepackage{epsfig}
-\usepackage{amsmath,graphicx,psfrag,pstricks,float,amssymb,fancyhdr,pdfpages, hyperref, enumitem, listings, subcaption, minted, diagbox, appendix, lastpage}
-\usepackage[sorting=none]{biblatex}
+\usepackage{amsmath,graphicx,psfrag,pstricks,float,amssymb,fancyhdr,pdfpages, hyperref, enumitem, listings, subcaption, minted, diagbox, appendix, lastpage, biblatex}
+% \usepackage[sorting=none]{biblatex}
 \usepackage[margin=25mm]{geometry}
 
 % \pagestyle{fancy}
@@ -89,30 +89,30 @@ Gregory Brooks, gb510, Christ's College
 
 
 %
-% THEORY AND DESIGN OF EXPERIMENT
+% THEORRTICAL DEVELOPMENT
 %
 
-\section{Theory And Design of Experiment}
+\section{Theoretical Development}
 
 \newpage
 
 
 
 %
-% APPARATUS AND EXPERIMENTAL TECHNIQUES
+% APPARATUS, EQUIPMENT AND EXPERIMENTAL TECHNIQUES
 %
 
-\section{Apparatus and Experimental Techniques}
+\section{Apparatus, Equipment and Experimental Techniques}
 
 \newpage
 
 
 
 %
-% RESULTS AND DISCUSSION
+% RESULTS, DELIVERABLES AND DISCUSSION
 %
 
-\section{Results and Discussion}
+\section{Results, Deliverables and Discussion}
 
 \newpage
 
@@ -135,7 +135,66 @@ Gregory Brooks, gb510, Christ's College
 \printbibliography
 \markboth{}{}
 
+\newpage
+
 \begin{appendix}
+
+  %
+  % RISK ASSESSMENT RETROSPECTIVE
+  %
+
+  \section{Risk Assesment Retrospective}
+    The risk assessment submitted at the start of the project does not mention any specific hazards besides office (computer) work, since the project is predominately software/firmware based (all project hardware operated at low voltages i.e. 12V or less). No other hazards were encountered during the course of the project, since the random noise generator PCBs were manufactured by the Dyson Centre's Electronics Development Group. In retrospect, although not part of the initial project specification, the risk assessment could have anticipated the possibility of manufacturing PCBs for the project. The hazards associated with this activity include high temperatures (from a soldering iron/oven/hot air gun) as well as chemical hazards associated with solder, fume extraction etc.
+
+
+
+  %
+  % UPPER BOUND ON DIFF PRIV
+  %
+
+  \section{Derivation of an Upper Bound on Multi-Sensor Differential Privacy Loss}
+
+
+
+  %
+  % URNG BLOCK DIAGRAM
+  %
+
+  \section{Uniform Random Number Generator Block Diagram}
+    \textit{$\langle$ TODO: insert block diagram$\rangle$}
+
+
+  %
+  % INVERSION METHOD BLOCK DIAGRAM
+  %
+
+  \section{Inversion Method Random Number Generator Block Diagram}
+    \textit{$\langle$ TODO: insert block diagram$\rangle$}
+
+
+  %
+  % EUROSYS POSTER
+  %
+
+  \section{EuroSys 2019 Poster: Safeguarding Sensor Device Drivers Using Physical Constraints}
+    \subsection{Description}
+      This poster~\cite{eurosys_poster} was submitted to EuroSys 2019, to communicate the idea of using information about a physical system to condition electronic sensor measurements. The example discussed in the poster is the detection and safeguarding against transduction attacks~\cite{Fu_2018}, where an attacker manipulates a sensor's output to gain control over a system. For example, a presentation~\cite{autonomous_vehicles} illustrates how the proximity sensors on a Tesla vehicle can be fooled into providing erroneous (or even no) data using ultrasonic interference produced by a device built using off-the-shelf electronics. An attacker would not need to have access to the Tesla software (or even physical access to the hardware) in order to control the system's behaviour.
+
+      The poster illustrates how the Newton language can be used to describe a physical system, in this case an accelerometer mounted to a PCB without vibration isolation. In this scenario, vibrations of the PCB (e.g. due to a nearby loudspeaker or even, in the case of a smartphone, due to loudspeakers mounted to the PCB) are measured by the accelerometer, obscuring a \textit{true} acceleration measurement. This effect is particularly pronounced if the board is driven at its resonant frequency, since the resulting oscillation will have a greater amplitude~\cite{adi}. This phenomenon could, in theory, be used as part of a transduction attack e.g. where a smartphone's loudspeaker is used to interfere with an application's estimate of the device's physical orientation.
+
+      To test whether this phenomenon can be distinguished from regular measurement noise, an experiment~\cite{poster_experiment} was performed using an MMA8451Q accelerometer mounted on an FRDM-KL03Z board. With the sensor resting on a desk, five minutes worth of accelerometer samples were recorded at 10Hz in order to obtain a probability distribution for the accelerometer's measurement noise (along the z axis, aligned with the vertical); this data was empirically observed to fit a Laplace distribution. This measurement was then repeated with the board resting on top of a smartphone playing a 440Hz audio tone --- in theory, this data (random samples from a sinusoid) would fit a bimodal beta distribution (derivation in section \ref{Poster_Derivation}) allowing a log likelihood ratio to be computed:
+
+      \begin{equation}
+        LLR = -2 \sum_{i = 1}^{N} \frac{\frac{1}{\pi}\left| \frac{1}{\sqrt{A^2\omega^4 - \ddot{x}_i^2}} \right|}{\frac{1}{2b} exp\left(-\frac{|\ddot{x}_i-\mu|}{b}\right)}
+      \end{equation}
+
+      For the data collected in the experiment, the log-likelihood ratio was found to be around -24600.08; the negative value indicates that the measurements taken whilst the tone was playing were indeed more accurately described by the bimodal beta distribution, compared to the Laplace distribution of sensor noise. Computing this log-likelihood ratio could therefore be used as evidence to suggest whether an audio tone based transduction attack is in progress.
+
+    \subsection{Derivation of Bimodal Beta Distribution} \label{Poster_Derivation}
+
+    \subsection{Poster}
+      \textit{$\langle$ TODO: insert the poster into this report?$\rangle$}
+
 \end{appendix}
 
 \end{document}
