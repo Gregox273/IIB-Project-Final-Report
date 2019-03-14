@@ -82,8 +82,14 @@ Gregory Brooks, gb510, Christ's College
 \rule{15.7cm}{0.5mm}
 \vspace{1cm}
 
+  %
+  % SYSTEM DIAGRAM
+  %
 
-\textit{$\langle$ TODO: write this last$\rangle$}
+  \subsection{System Diagram}
+    \textit{$\langle$ TODO: insert block diagram of system and describe which parts have been the focus of this project$\rangle$}
+
+  \textit{$\langle$ TODO: write this last$\rangle$}
 
 \newpage
 
@@ -105,25 +111,75 @@ Gregory Brooks, gb510, Christ's College
 
 \section{Theoretical Development}
 
+  \subsection{Brainstorming Example Applications}
+    \subsubsection{\textit{Intelligent} Noising}
+      \textit{$\langle$ TODO: allowing the compiler to choose how to add noise, rather than explicity stating where to add noise$\rangle$}
+
+    \subsubsection{Digital Camera/Viola-Jones Facial Detection}
+
+    \subsubsection{Microphone}
+
+
+  \subsection{System Specification}
+    \textit{$\langle$ TODO: move to technical abstract?$\rangle$}
+
+  \subsection{Multi-Sensor Differential Privacy Loss}
+
+  \subsection{Privacy Budget Management Algorithm}
+
 \newpage
 
 
 
 %
-% APPARATUS, EQUIPMENT AND EXPERIMENTAL TECHNIQUES
+% APPARATUS, EQUIPMENT AND TECHNIQUES
 %
 
-\section{Apparatus, Equipment and Experimental Techniques}
+\section{Apparatus, Equipment and Techniques}
+
+  \subsection{iCE40 FPGA}
+
+  \subsection{Software Prototyping}
+
+  \subsection{FPGA Synthesis}
+
+  \subsection{Repository Structure and Build System}
+
+  \subsection{Verilog Development Techniques}
+    \textit{$\langle$ TODO: describe good practices picked up over the course of this project$\rangle$}
 
 \newpage
 
 
 
 %
-% RESULTS, DELIVERABLES AND DISCUSSION
+% DELIVERABLES
 %
 
-\section{Results, Deliverables and Discussion}
+\section{Deliverables}
+  \subsection{Hardware Entropy Source}
+    One of the key components of a security/privacy application is a true random number generator (TRNG). Unlike a pseudorandom number generator (PRNG), which produces a predictable deterministic outcome, a true random number generator's output cannot be anticipated by an attacker, preserving system security and users' privacy. The output rate of TRNGs is often limited so can be used to seed a cryptographically secure PRNG (CSPRNG) algorithm to increase output data rate without significantly compromising security. This extra step was not required for this project, since the rate at which random numbers are consumed is relatively low.
+
+    I investigated using the iCE40 FPGA's hardware to generate \textit{$\langle$ TODO: finish$\rangle$}
+
+  \subsection{Uniform Random Number Generator}
+  \textit{$\langle$ TODO: insert block diagram$\rangle$}
+
+  \subsection{Inversion Method Random Number Generator}
+    \textit{$\langle$ TODO: insert block diagram$\rangle$}
+
+
+
+%
+% RESULTS
+%
+
+\section{Results}
+
+  \subsection{Scaling of Logic Implementations}
+    \textit{$\langle$ TODO: investigate how URNG and RNG logic implementations scale with various parameters (and how this compares to a naive implementation)$\rangle$}
+
+  \textit{$\langle$ TODO: investigate scaling of adder hardware (inferred from Verilog vs iCE40 hardware accumulators)$\rangle$}
 
 \newpage
 
@@ -235,6 +291,17 @@ Gregory Brooks, gb510, Christ's College
   \section{Inversion Method Random Number Generator: Block Diagram}
     \textit{$\langle$ TODO: insert block diagram$\rangle$}
 
+
+  %
+  % NOISE GENERATOR SCHEMATIC AND PCB LAYOUT
+  %
+  \newpage
+  \section{Hardware Entropy Source Schematic and PCB}
+    \begin{figure}[H]
+      \centering
+      \includegraphics[width=\textwidth]{schematic.pdf}
+      \label{fig:schematic}
+    \end{figure}
 
   %
   % EUROSYS POSTER
