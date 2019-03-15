@@ -3,7 +3,7 @@
 % 24cm \footskip 1cm
 \usepackage[british]{babel}
 \usepackage{epsfig}
-\usepackage{amsmath,graphicx,psfrag,pstricks,float,amssymb,fancyhdr,pdfpages, hyperref, enumitem, listings, subcaption, minted, diagbox, appendix, lastpage, biblatex, bm}
+\usepackage{amsmath,graphicx,psfrag,pstricks,float,amssymb,fancyhdr,pdfpages, hyperref, enumitem, listings, minted, diagbox, appendix, lastpage, biblatex, bm, subfig}
 % \usepackage[sorting=none]{biblatex}
 \usepackage[margin=25mm]{geometry}
 
@@ -162,6 +162,24 @@ Gregory Brooks, gb510, Christ's College
 
     I investigated using the iCE40 FPGA's hardware to generate \textit{$\langle$ TODO: finish$\rangle$}
 
+    \begin{figure}[H]
+      \centering
+      \subfloat[Front]{\includegraphics[width=0.4\textwidth]{fig/pcb_render_f.png}}
+      \qquad
+      \subfloat[Back]{\includegraphics[width=0.4\textwidth]{fig/pcb_render_b.png}}
+      \caption{3D renders of PCB (in KiCad)}
+      \label{fig:pcb_render}
+    \end{figure}
+
+    \textit{$\langle$ TODO: finish$\rangle$}
+
+    \textit{$\langle$ TODO: cite Horowitz and Hill$\rangle$}
+
+    \textit{$\langle$ TODO: reference appendix (schematic and pcb)$\rangle$}
+
+    \textit{$\langle$ TODO: add links to all relevant github repositories (not just this one)$\rangle$}
+
+
   \subsection{Uniform Random Number Generator}
   \textit{$\langle$ TODO: insert block diagram$\rangle$}
 
@@ -272,9 +290,20 @@ Gregory Brooks, gb510, Christ's College
     \\
     \\
     Since the Newton language recently gained a mutual information operator, I attempted to factor mutual information into this calculation. Unfortunately, it appears that mutual information alone does not provide enough information to calculate indirect privacy loss --- the exact nature of the correlation between two (or more) random variables is required i.e. the conditional distribution for the unknown variable given known ones:
+    \\
+    \\
+    Define $\hat{X}$ and $X$ as before and let $\hat{Y}$ be a random variable correlated with $\hat{X}$. Both $\hat{X}$ and $\hat{Y}$ can take values within some range (e.g. due to finite sensor precision):
+    \begin{align*}
+      \hat{X} \in R_{\hat{X}},\ \hat{Y} \in R_{\hat{Y}}
+    \end{align*}
+    \\
+    The mutual information $I(\hat{X};\hat{Y})$ is defined as:
+    \begin{align}
+      I(\hat{X};\hat{Y}) = \int_{R_{\hat{Y}}} \int_{R_{\hat{X}}} p(\hat{X}, \hat{Y}) log \left( \frac{p(\hat{X}, \hat{Y})}{p(\hat{X})p(\hat{Y})} \right) d\hat{X} d\hat{Y}
+    \end{align}
+    where $p()$ denotes the probability density function for a random variable. I have been unable to insert this value into the privacy loss equation, however the following equation can be obtained if the conditional distribution of $\hat{X}$ given $\hat{Y}$ is known:
 
-    \textit{$\langle$ TODO: include working here$\rangle$}
-
+      \textit{$\langle$ TODO: finish$\rangle$}
 
   %
   % URNG BLOCK DIAGRAM
@@ -297,11 +326,23 @@ Gregory Brooks, gb510, Christ's College
   %
   \newpage
   \section{Hardware Entropy Source Schematic and PCB}
+  \vspace{-1cm}
     \begin{figure}[H]
       \centering
-      \includegraphics[width=\textwidth]{schematic.pdf}
+      \includegraphics[angle=90,width=\textwidth]{fig/schematic.pdf}
       \label{fig:schematic}
     \end{figure}
+
+    \newpage
+
+    \vspace{-1.5cm}
+    \begin{figure}[H]
+      \centering
+      \includegraphics[angle=90, width=0.9\textwidth]{fig/pcb.PNG}
+      \label{fig:pcb}
+    \end{figure}
+
+    \newpage
 
   %
   % EUROSYS POSTER
