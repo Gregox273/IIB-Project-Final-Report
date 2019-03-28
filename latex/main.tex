@@ -3,9 +3,11 @@
 % 24cm \footskip 1cm
 \usepackage[british]{babel}
 \usepackage{epsfig}
-\usepackage{amsmath,graphicx,psfrag,pstricks,float,amssymb,fancyhdr,pdfpages, hyperref, enumitem, listings, minted, diagbox, appendix, lastpage, biblatex, bm, subfig}
+\usepackage{amsmath,graphicx,psfrag,pstricks,float,amssymb,fancyhdr,pdfpages, hyperref, enumitem, listings, subcaption, diagbox, appendix, lastpage, bm}
+\usepackage[backend=biber]{biblatex}
 % \usepackage[sorting=none]{biblatex}
 \usepackage[margin=25mm]{geometry}
+%\usepackage{minted}
 
 \DeclareMathOperator*{\argmax}{argmax}
 \DeclareMathOperator*{\argmin}{argmin}
@@ -160,16 +162,20 @@ Gregory Brooks, gb510, Christ's College
   \subsection{Hardware Entropy Source}
     One of the key components of a security/privacy application is a true random number generator (TRNG). Unlike a pseudorandom number generator (PRNG), which produces a predictable deterministic outcome, a true random number generator's output cannot be anticipated by an attacker, preserving system security and users' privacy. The output rate of TRNGs is often limited so can be used to seed a cryptographically secure PRNG (CSPRNG) algorithm to increase output data rate without significantly compromising security. This extra step was not required for this project, since the rate at which random numbers are consumed is relatively low.
 
-    I investigated using the iCE40 FPGA's hardware to generate \textit{$\langle$ TODO: finish$\rangle$}
+    I investigated using the iCE40 FPGA's differential I/O hardware to generate random bits which could be fed into a TRNG to generate random samples from an arbitrary distribution. Initially, it was hoped that simply leaving two comparator inputs floating would cause the output to fluctuate randomly --- in practice this did not occur as the comparator hardware requires one of the inputs to be biased within a narrow common mode voltage range (roughly half the I/O supply voltage, allowing the other input to swing about this reference voltage)~\cite{ice40_diff_io}. I decided to design a PCB to set this bias voltage, as well as provide an alternative entropy source in the form of a reverse biased zener diode producing avalanche noise. In theory, this circuit would provide a 'better' i.e. less predictable source of entropy since, unlike the floating input pin, the avalanche noise (and therefore random number output) produced is independent of the device's external environment\footnote{A floating input pin can easily be influenced by its external environment e.g. picking up 50Hz noise from nearby electrical mains, resulting in a non-uniform frequency spectrum for 'random' output.}.
 
-    \begin{figure}[H]
-      \centering
-      \subfloat[Front]{\includegraphics[width=0.4\textwidth]{fig/pcb_render_f.png}}
-      \qquad
-      \subfloat[Back]{\includegraphics[width=0.4\textwidth]{fig/pcb_render_b.png}}
-      \caption{3D renders of PCB (in KiCad)}
-      \label{fig:pcb_render}
-    \end{figure}
+    The circuit used in this noise generator is based on a design by Professor Paul Horowitz \textit{$\langle$ TODO: cite$\rangle$}, modified to operate at 3.3V and 0V power rails (rather than $\pm5V$). Avalanche noise produced by a reverse biased zener diode is amplified through a dual op-amp amplifier stage before being modulated about a 1.65V DC bias $\left(\frac{V_{cc}}{2}\right)$; this output can then be fed into one of the iCE40's comparator inputs. A second output on the PCB comes from a simple potentiometer circuit to set the common mode reference voltage on the second comparator input (with series resistors to allow for fine control about $\frac{V_{cc}}{2}$). Since the comparator output depends on whether the instantaneous voltage of the noise waveform lies above or below this reference voltage, this reference point can be adjusted to set the ratio of ones to zeros in the random comparator output.
+    \textit{$\langle$ TODO: finish e.g. talk about zener circuit specs (50MHz noise bandwidth?)$\rangle$}
+
+    % TODO: fix
+    % \begin{figure}[H]
+    %   \centering
+    %   \subfigure[Front]{\includegraphics[width=0.4\textwidth]{fig/pcb_render_f.png}}
+    %   \qquad
+    %   \subfigure[Back]{\includegraphics[width=0.4\textwidth]{fig/pcb_render_b.png}}
+    %   \caption{3D renders of PCB (in KiCad)}
+    %   \label{fig:pcb_render}
+    % \end{figure}
 
     \textit{$\langle$ TODO: finish$\rangle$}
 
@@ -278,7 +284,7 @@ Gregory Brooks, gb510, Christ's College
       l_Y(\bf{\hat{x}_a}, \bf{\hat{x}_b}) & = log \left( \frac{Pr\{ \bf{X} = \bf{x}_{obs} | \bf{\hat{X}} = \bf{\hat{x}_a} \}}{Pr\{ \bf{X} = \bf{x}_{obs} | \bf{\hat{X}} = \bf{\hat{x}_b} \}} \right)
     \end{align}
     \\
-    This constrained optimisation problem could be solved to calculate an exact value for privacy loss. Alternatively, an upper bound on privacy loss can be determined using a far simpler calculation:
+    This constrained optimisation problem could be solved to calculate an exact value for privacy loss. Alternatively, an upper bound on privacy loss can be determined using a far simpler calculation (the sum of privacy losses for each individual sensor):
     \begin{align}
       l_Y(\bf{\hat{x}_a}, \bf{\hat{x}_b}) & = log \left( \prod_{u=1}^n \frac{Pr\{ X_u = x_{u,obs} | \hat{X}_u = \hat{x}_{u,a} \}} {Pr\{ X_u = x_{u,obs} | \hat{X}_u = \hat{x}_{u,b} \}} \right) \nonumber \\
       & \leq log \left( \prod_{u=1}^n \frac{Pr\{ X_u = x_{u,obs} | \hat{X}_u = \hat{x}_{u,c} \}}{Pr\{ X_u = x_{u,obs} | \hat{X}_u = \hat{x}_{u,d} \}} \right) \label{eqn:upper_bound} \\
@@ -301,10 +307,19 @@ Gregory Brooks, gb510, Christ's College
     \begin{align}
       I(\hat{X};\hat{Y}) = \int_{R_{\hat{Y}}} \int_{R_{\hat{X}}} p(\hat{X}, \hat{Y}) log \left( \frac{p(\hat{X}, \hat{Y})}{p(\hat{X})p(\hat{Y})} \right) d\hat{X} d\hat{Y}
     \end{align}
-    where $p()$ denotes the probability density function for a random variable. I have been unable to insert this value into the privacy loss equation, however the following equation can be obtained if the conditional distribution of $\hat{X}$ given $\hat{Y}$ is known:
+    where $p()$ denotes the probability density function for a random variable. I have been unable to insert this value into the privacy loss equation, however a value for privacy loss can be obtained if the conditional distribution of $\hat{X}$ given $\hat{Y}$ is known, as this allows the conditional distribution of $X$ given $\hat{Y}$ to be calculated:
+    \begin{equation}
+      Pr\{X = x | \hat{Y} = \hat{y}\} = \int_{R_{\hat{X}}}Pr\{X = x | \hat{X} = \hat{x}\} Pr\{\hat{X} = \hat{x} | \hat{Y} = \hat{y}\} d \hat{x} \label{eqn:p_x_given_y_hat}
+    \end{equation}
 
-      \textit{$\langle$ TODO: finish$\rangle$}
+    Equation \ref{eqn:p_x_given_y_hat} can be substituted into Equation \ref{eqn:priv_loss_y_hat_initial}, the formula for privacy loss incurred by $\hat{Y}$ as a result of observing a value $x_{obs}$ for $X$. This results in Equation \ref{eqn:priv_loss_y_hat_final}:
 
+    \begin{align}
+      l_y(\hat{y}_a, \hat{y}_b) & = log \left( \frac{Pr\{X = x_{obs} | \hat{Y} = \hat{y}_a\}}{Pr\{X = x_{obs} | \hat{Y} = \hat{y}_b\}} \right) \label{eqn:priv_loss_y_hat_initial} \\
+      & = log \left( \frac{\int_{R_{\hat{X}}} Pr\{X = x_{obs}| \hat{X} = \hat{x}\} Pr\{\hat{X}=\hat{x}|\hat{Y} = \hat{y}_a\} d\hat{x} }{\int_{R_{\hat{X}}} Pr\{X = x_{obs}| \hat{X} = \hat{x}\} Pr\{\hat{X}=\hat{x}|\hat{Y} = \hat{y}_b\} d\hat{x} }\right) \label{eqn:priv_loss_y_hat_final}
+    \end{align}
+
+    for $\hat{y}_a, \hat{y}_b = \argmax_{\hat{y}_a, \hat{y}_b}(l_y)$ as before.
   %
   % URNG BLOCK DIAGRAM
   %
