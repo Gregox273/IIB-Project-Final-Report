@@ -84,6 +84,8 @@ Gregory Brooks, gb510, Christ's College
 \rule{15.7cm}{0.5mm}
 \vspace{1cm}
 
+\textit{$\langle$ TODO: write this last$\rangle$}
+
   %
   % SYSTEM DIAGRAM
   %
@@ -91,7 +93,6 @@ Gregory Brooks, gb510, Christ's College
   \subsection{System Diagram}
     \textit{$\langle$ TODO: insert block diagram of system and describe which parts have been the focus of this project$\rangle$}
 
-  \textit{$\langle$ TODO: write this last$\rangle$}
 
 \newpage
 
@@ -134,14 +135,14 @@ Gregory Brooks, gb510, Christ's College
     \\
     The proposed system architecture is as follows:
     \begin{itemize}
-      \item The FPGA acts as a sensor interface, allowing external circuitry to request noised sensor values. Noised measurement signals will be referred to as \textit{protected}, as their true value has been masked to preseve privacy; the system also allows \textit{unprotected} signals to be forwarded to the outside world with no random noise added. %Newton also allows signals to be derived from other more fundamental signals e.g. a value derived from sensor measurements; for this system, random noise can only be applied to sensor measurement signals i.e. these are the only types of signal that can be (and the only types of signal that need to be) protected.
+      \item The FPGA acts as a sensor interface, allowing external circuitry to request noised sensor values. Noised measurement signals are referred to as \textit{protected}, as their true value has been masked to preseve privacy; the system also allows \textit{unprotected} signals to be forwarded to the outside world with no random noise added. %Newton also allows signals to be derived from other more fundamental signals e.g. a value derived from sensor measurements; for this system, random noise can only be applied to sensor measurement signals i.e. these are the only types of signal that can be (and the only types of signal that need to be) protected.
       \item A \textit{privacy file} (e.g. a YAML file) is used to specify protected measurement signals for a particular embedded system.
       \item In order to apply random noise to a particular signal, the FPGA requires a range of parameters to be defined for each protected signal:
       \begin{itemize}
         \item Range of possible sensor outputs.
         \item Privacy \textit{budget} value allocated to the sensor.
         \item Privacy \textit{budget} replenishment rate.
-        \item $\epsilon$, a measure of privacy where a smaller value results in greater privacy by increasing the variance of applied noise.
+        \item Value of $\epsilon$, a measure of privacy where a smaller value results in greater privacy by increasing the variance of applied noise.
       \end{itemize}
       These values can be assigned to protected signals in the privacy file.
       \item The FPGA maintains a differential privacy \textit{budget} for each protected signal. Querying a value for a protected signal (i.e. requesting a noised measurement from the FPGA) causes that signal to incur a privacy loss. The FPGA quantifies this loss (a function of the random noise sample added to the raw measurement~\cite{Choi2018GuaranteeingLD}) and subtracts it from the signal's privacy budget. Once the budget is depleted, further queries of the signal in question are ignored --- a nonzero budget replenishment rate can be specified in the privacy file so that the signal can eventually be queried again once the budget has replenished sufficiently.
@@ -149,11 +150,8 @@ Gregory Brooks, gb510, Christ's College
       \begin{itemize}
         \item Each Newton invariant containing protected measurement signals has an associated bitfield register on the FPGA. Each bit in the register acts as a read flag for each measurement signal contained in the associated invariant --- the flag is set when the sensor is queried (i.e. when a measurement is taken and the noised measurement value becomes \textit{known} to the outside world) and is not cleared until the sensor's privacy budget is completely replenished some time after a query (at which point the measurement value can be considered \textit{unknown} to the outside world).
         \item As long as any two flags remain unset, there are two variables in the equation that are \textit{unknown} to an attacker. The equation cannot be solved and so no information\footnote{This assumes that the probability distributions of sensor outputs are independent, see Appendix \ref{appendix:diff_priv_loss} for an investigation into correlated measurements.} can be gained about the \textit{unknown} values.
-        \item If one of the final two \textit{unknown} values is then queried, then the equation becomes solvable for the final \textit{unknown} value --- this measurement incurs a privacy loss. The mathematics behind the calculation of this privacy loss is investigated in Appendix \ref{appendix:diff_priv_loss}; whilst calculation of an exact value for privacy loss (Equation \ref{eqn:exact_indirect_priv_loss} in Appendix \ref{appendix:diff_priv_loss}) requires the use of a mathematical optimisation technique such as Lagrange multipliers, a simpler calculation can be used to obtain an upper bound on the value. This simpler calculation can be performed more easily on a small FPGA such as the iCE40.
-
-        \item Each subsequent measurement of a 'known' value
-
-        \item If responding to a query would exceed the privacy budget for any protected signal (not just the one being queried) then the response should not be granted.
+        \item If only one bit remains unset, then the remaining \textit{unkown} value can be calcuated using the other \textit{known} values with set flags --- the \textit{unkown} signal incurs a privacy loss. The mathematics behind the calculation of this privacy loss is investigated in Appendix \ref{appendix:diff_priv_loss}; whilst calculation of an exact value for privacy loss (Equation \ref{eqn:exact_indirect_priv_loss} in Appendix \ref{appendix:diff_priv_loss}) requires the use of a mathematical optimisation technique such as Lagrange multipliers, a simpler calculation can be used to obtain an upper bound on the value. This simpler calculation can be performed more easily on a small FPGA such as the iCE40.
+        \item If responding to a query would exceed the privacy budget for any protected signal (not just the one being queried) then a response should not be granted.
 
       \end{itemize}
 
@@ -326,11 +324,16 @@ Gregory Brooks, gb510, Christ's College
       & \hat{x}_{u,d} = \argmin_{\hat{x}_{u,d}}Pr\{ X_u = x_{u,obs} | \hat{X}_u = \hat{x}_{u,d} \} \nonumber
     \end{align}
     i.e. the constraint $f^{-1}(\hat{y})$ has been removed. Equation \ref{eqn:upper_bound} can be interpreted as the sum of the privacy losses incurred by the $X$ variables i.e. $\sum_{u=1}^n l_{X_u}$. $Pr\{ X_u = x_{u,obs} | \hat{X}_u = \hat{x}_u \}$ is simply the Laplace distribution of the noise applied to the measurement represented by $\hat{X}$, centred on value $\hat{x}$.
+
+    Note that this privacy loss is incurred when all values $x_{1,obs}$ to $x_{n,obs}$ are provided to the outside world (i.e. the event where an attacker transitions from having no information to the system to being provided with $x_{1,obs}$ to $x_{n,obs}$); for each subsequent individual query response $x_{u,obs}$, the resulting privacy loss is only:
+    \begin{align}
+      l_Y(\bf{\hat{x}_a}, \bf{\hat{x}_b}) & = log \left( \frac{Pr\{ X_u = x_{u,obs} | \hat{X}_u = \hat{x}_{u,a} \}} {Pr\{ X_u = x_{u,obs} | \hat{X}_u = \hat{x}_{u,b} \}} \right)
+    \end{align}
     \\
-    \\
+     where values for $\bf{\hat{x}_a}$ and $\bf{\hat{x}_b}$ are the same as those used in Equation \ref{eqn:exact_indirect_priv_loss} (if calculating exact privacy loss) or Equation \ref{eqn:upper_bound} (if calculating an upper bound).
+
     Since the Newton language recently gained a mutual information operator, I attempted to factor mutual information into this calculation. Unfortunately, it appears that mutual information alone does not provide enough information to calculate indirect privacy loss --- the exact nature of the correlation between two (or more) random variables is required i.e. the conditional distribution for the unknown variable given known ones:
-    \\
-    \\
+
     Define $\hat{X}$ and $X$ as before and let $\hat{Y}$ be a random variable correlated with $\hat{X}$. Both $\hat{X}$ and $\hat{Y}$ can take values within some range (e.g. due to finite sensor precision):
     \begin{align*}
       \hat{X} \in R_{\hat{X}},\ \hat{Y} \in R_{\hat{Y}}
