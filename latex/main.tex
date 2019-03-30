@@ -128,6 +128,37 @@ Gregory Brooks, gb510, Christ's College
   \subsection{Multi-Sensor Differential Privacy Loss}
 
   \subsection{Privacy Budget Management Algorithm}
+    In the following section, I propose a privacy management system architecture that could be used to manage multi-sensor privacy on an FPGA. Due to project time constraints, the system has not been completely implemented, since this would divert time and attention away from investigating the more important research questions posed by the project.
+    \\
+    \textit{$\langle$ TODO: describe what will have been implemented by the submission date e.g. use privacy yaml file and Newton AST to generate some of the logic implementation by filling in a Verilog template$\rangle$}
+    \\
+    The proposed system architecture is as follows:
+    \begin{itemize}
+      \item The FPGA acts as a sensor interface, allowing external circuitry to request noised sensor values. Noised measurement signals will be referred to as \textit{protected}, as their true value has been masked to preseve privacy; the system also allows \textit{unprotected} signals to be forwarded to the outside world with no random noise added. %Newton also allows signals to be derived from other more fundamental signals e.g. a value derived from sensor measurements; for this system, random noise can only be applied to sensor measurement signals i.e. these are the only types of signal that can be (and the only types of signal that need to be) protected.
+      \item A \textit{privacy file} (e.g. a YAML file) is used to specify protected measurement signals for a particular embedded system.
+      \item In order to apply random noise to a particular signal, the FPGA requires a range of parameters to be defined for each protected signal:
+      \begin{itemize}
+        \item Range of possible sensor outputs.
+        \item Privacy \textit{budget} value allocated to the sensor.
+        \item Privacy \textit{budget} replenishment rate.
+        \item $\epsilon$, a measure of privacy where a smaller value results in greater privacy by increasing the variance of applied noise.
+      \end{itemize}
+      These values can be assigned to protected signals in the privacy file.
+      \item The FPGA maintains a differential privacy \textit{budget} for each protected signal. Querying a value for a protected signal (i.e. requesting a noised measurement from the FPGA) causes that signal to incur a privacy loss. The FPGA quantifies this loss (a function of the random noise sample added to the raw measurement~\cite{Choi2018GuaranteeingLD}) and subtracts it from the signal's privacy budget. Once the budget is depleted, further queries of the signal in question are ignored --- a nonzero budget replenishment rate can be specified in the privacy file so that the signal can eventually be queried again once the budget has replenished sufficiently.
+      \item Invariants in the Newton description define relationships between signals. This is important as privacy is lost if a measurand's value is calculated by taking measurements from related sensors, without directly measuring the measurand. The system must account for this \textit{indirect} privacy loss:
+      \begin{itemize}
+        \item Each Newton invariant containing protected measurement signals has an associated bitfield register on the FPGA. Each bit in the register acts as a read flag for each measurement signal contained in the associated invariant --- the flag is set when the sensor is queried (i.e. when a measurement is taken and the noised measurement value becomes \textit{known} to the outside world) and is not cleared until the sensor's privacy budget is completely replenished some time after a query (at which point the measurement value can be considered \textit{unknown} to the outside world).
+        \item As long as any two flags remain unset, there are two variables in the equation that are \textit{unknown} to an attacker. The equation cannot be solved and so no information\footnote{This assumes that the probability distributions of sensor outputs are independent, see Appendix \ref{appendix:diff_priv_loss} for an investigation into correlated measurements.} can be gained about the \textit{unknown} values.
+        \item If one of the final two \textit{unknown} values is then queried, then the equation becomes solvable for the final \textit{unknown} value --- this measurement incurs a privacy loss. The mathematics behind the calculation of this privacy loss is investigated in Appendix \ref{appendix:diff_priv_loss}; whilst calculation of an exact value for privacy loss (Equation \ref{eqn:exact_indirect_priv_loss} in Appendix \ref{appendix:diff_priv_loss}) requires the use of a mathematical optimisation technique such as Lagrange multipliers, a simpler calculation can be used to obtain an upper bound on the value. This simpler calculation can be performed more easily on a small FPGA such as the iCE40.
+
+        \item Each subsequent measurement of a 'known' value
+
+        \item If responding to a query would exceed the privacy budget for any protected signal (not just the one being queried) then the response should not be granted.
+
+      \end{itemize}
+
+
+    \end{itemize}
 
 \newpage
 
@@ -138,6 +169,10 @@ Gregory Brooks, gb510, Christ's College
 %
 
 \section{Apparatus, Equipment and Techniques}
+  \subsection{GitHub} \label{subsection:GitHub}
+    \textit{$\langle$ TODO: list GitHub repositories$\rangle$}
+    \textit{$\langle$ TODO: describe how GitHub was used$\rangle$}
+    \textit{$\langle$ TODO: include an example of commit history for a repository$\rangle$}
 
   \subsection{iCE40 FPGA}
 
@@ -164,7 +199,7 @@ Gregory Brooks, gb510, Christ's College
 
     I investigated using the iCE40 FPGA's differential I/O hardware to generate random bits which could be fed into a TRNG to generate random samples from an arbitrary distribution. Initially, it was hoped that simply leaving two comparator inputs floating would cause the output to fluctuate randomly --- in practice this did not occur as the comparator hardware requires one of the inputs to be biased within a narrow common mode voltage range (roughly half the I/O supply voltage, allowing the other input to swing about this reference voltage)~\cite{ice40_diff_io}. I decided to design a PCB to set this bias voltage, as well as provide an alternative entropy source in the form of a reverse biased zener diode producing avalanche noise. In theory, this circuit would provide a 'better' i.e. less predictable source of entropy since, unlike the floating input pin, the avalanche noise (and therefore random number output) produced is independent of the device's external environment\footnote{A floating input pin can easily be influenced by its external environment e.g. picking up 50Hz noise from nearby electrical mains, resulting in a non-uniform frequency spectrum for 'random' output.}.
 
-    The circuit used in this noise generator is based on a design by Professor Paul Horowitz \textit{$\langle$ TODO: cite$\rangle$}, modified to operate at 3.3V and 0V power rails (rather than $\pm5V$). Avalanche noise produced by a reverse biased zener diode is amplified through a dual op-amp amplifier stage before being modulated about a 1.65V DC bias $\left(\frac{V_{cc}}{2}\right)$; this output can then be fed into one of the iCE40's comparator inputs. A second output on the PCB comes from a simple potentiometer circuit to set the common mode reference voltage on the second comparator input (with series resistors to allow for fine control about $\frac{V_{cc}}{2}$). Since the comparator output depends on whether the instantaneous voltage of the noise waveform lies above or below this reference voltage, this reference point can be adjusted to set the ratio of ones to zeros in the random comparator output.
+    The circuit used in this noise generator is based on a design by Professor Paul Horowitz \textit{$\langle$ TODO: cite book$\rangle$}, modified to operate at 3.3V and 0V power rails (rather than $\pm5V$). Avalanche noise produced by a reverse biased zener diode is amplified through a dual op-amp amplifier stage before being modulated about a 1.65V DC bias $\left(\frac{V_{cc}}{2}\right)$; this output can then be fed into one of the iCE40's comparator inputs. A second output on the PCB comes from a simple potentiometer circuit to set the common mode reference voltage on the second comparator input (with series resistors to allow for fine control about $\frac{V_{cc}}{2}$). Since the comparator output depends on whether the instantaneous voltage of the noise waveform lies above or below this reference voltage, this reference point can be adjusted to set the ratio of ones to zeros in the random comparator output.
     \textit{$\langle$ TODO: finish e.g. talk about zener circuit specs (50MHz noise bandwidth?)$\rangle$}
 
     % TODO: fix
@@ -181,9 +216,7 @@ Gregory Brooks, gb510, Christ's College
 
     \textit{$\langle$ TODO: cite Horowitz and Hill$\rangle$}
 
-    \textit{$\langle$ TODO: reference appendix (schematic and pcb)$\rangle$}
-
-    \textit{$\langle$ TODO: add links to all relevant github repositories (not just this one)$\rangle$}
+    The full circuit schematic and PCB layout can be found in Appendix \ref{appendix:schematic}, as well as the GitHub repository listed in Section \ref{subsection:GitHub}.
 
 
   \subsection{Uniform Random Number Generator}
@@ -243,7 +276,7 @@ Gregory Brooks, gb510, Christ's College
   % UPPER BOUND ON DIFF PRIV
   %
 
-  \section{Derivation of an Upper Bound on \textit{Indirect} Differential Privacy Loss}
+  \section{Derivation of an Upper Bound on \textit{Indirect} Differential Privacy Loss} \label{appendix:diff_priv_loss}
     Let $\hat{X}$ be a random variable denoting a sensor measurement, including any measurement error.
     \\
     \\
@@ -281,7 +314,7 @@ Gregory Brooks, gb510, Christ's College
     \\
     Equation \ref{eqn:privacy_loss} can be rewritten as follows, where $\bf{\hat{x}_a}$ and $\bf{\hat{x}_b}$ are chosen to maximise $l_Y$ as before, but subject to constraints $\bf{\hat{x}_a}$ $ = f^{-1}(\hat{y}_a)$ and $\bf{\hat{x}_b}$ $ = f^{-1}(\hat{y}_b)$:
     \begin{align}
-      l_Y(\bf{\hat{x}_a}, \bf{\hat{x}_b}) & = log \left( \frac{Pr\{ \bf{X} = \bf{x}_{obs} | \bf{\hat{X}} = \bf{\hat{x}_a} \}}{Pr\{ \bf{X} = \bf{x}_{obs} | \bf{\hat{X}} = \bf{\hat{x}_b} \}} \right)
+      l_Y(\bf{\hat{x}_a}, \bf{\hat{x}_b}) & = log \left( \frac{Pr\{ \bf{X} = \bf{x}_{obs} | \bf{\hat{X}} = \bf{\hat{x}_a} \}}{Pr\{ \bf{X} = \bf{x}_{obs} | \bf{\hat{X}} = \bf{\hat{x}_b} \}} \right) \label{eqn:exact_indirect_priv_loss}
     \end{align}
     \\
     This constrained optimisation problem could be solved to calculate an exact value for privacy loss. Alternatively, an upper bound on privacy loss can be determined using a far simpler calculation (the sum of privacy losses for each individual sensor):
@@ -292,7 +325,7 @@ Gregory Brooks, gb510, Christ's College
       & \hat{x}_{u,c} = \argmax_{\hat{x}_{u,c}}Pr\{ X_u = x_{u,obs} | \hat{X}_u = \hat{x}_{u,c} \} \nonumber \\
       & \hat{x}_{u,d} = \argmin_{\hat{x}_{u,d}}Pr\{ X_u = x_{u,obs} | \hat{X}_u = \hat{x}_{u,d} \} \nonumber
     \end{align}
-    i.e. the constraint $f^{-1}(\hat{y})$ has been removed. Equation \ref{eqn:upper_bound} can be interpreted as the sum of the privacy losses incurred by the $X$ variables i.e. $\sum_{u=1}^n l_{X_u}$.
+    i.e. the constraint $f^{-1}(\hat{y})$ has been removed. Equation \ref{eqn:upper_bound} can be interpreted as the sum of the privacy losses incurred by the $X$ variables i.e. $\sum_{u=1}^n l_{X_u}$. $Pr\{ X_u = x_{u,obs} | \hat{X}_u = \hat{x}_u \}$ is simply the Laplace distribution of the noise applied to the measurement represented by $\hat{X}$, centred on value $\hat{x}$.
     \\
     \\
     Since the Newton language recently gained a mutual information operator, I attempted to factor mutual information into this calculation. Unfortunately, it appears that mutual information alone does not provide enough information to calculate indirect privacy loss --- the exact nature of the correlation between two (or more) random variables is required i.e. the conditional distribution for the unknown variable given known ones:
@@ -311,14 +344,14 @@ Gregory Brooks, gb510, Christ's College
     \begin{equation}
       Pr\{X = x | \hat{Y} = \hat{y}\} = \int_{R_{\hat{X}}}Pr\{X = x | \hat{X} = \hat{x}\} Pr\{\hat{X} = \hat{x} | \hat{Y} = \hat{y}\} d \hat{x} \label{eqn:p_x_given_y_hat}
     \end{equation}
-
+    \\
     Equation \ref{eqn:p_x_given_y_hat} can be substituted into Equation \ref{eqn:priv_loss_y_hat_initial}, the formula for privacy loss incurred by $\hat{Y}$ as a result of observing a value $x_{obs}$ for $X$. This results in Equation \ref{eqn:priv_loss_y_hat_final}:
 
     \begin{align}
       l_y(\hat{y}_a, \hat{y}_b) & = log \left( \frac{Pr\{X = x_{obs} | \hat{Y} = \hat{y}_a\}}{Pr\{X = x_{obs} | \hat{Y} = \hat{y}_b\}} \right) \label{eqn:priv_loss_y_hat_initial} \\
       & = log \left( \frac{\int_{R_{\hat{X}}} Pr\{X = x_{obs}| \hat{X} = \hat{x}\} Pr\{\hat{X}=\hat{x}|\hat{Y} = \hat{y}_a\} d\hat{x} }{\int_{R_{\hat{X}}} Pr\{X = x_{obs}| \hat{X} = \hat{x}\} Pr\{\hat{X}=\hat{x}|\hat{Y} = \hat{y}_b\} d\hat{x} }\right) \label{eqn:priv_loss_y_hat_final}
     \end{align}
-
+    \\
     for $\hat{y}_a, \hat{y}_b = \argmax_{\hat{y}_a, \hat{y}_b}(l_y)$ as before.
   %
   % URNG BLOCK DIAGRAM
@@ -340,7 +373,7 @@ Gregory Brooks, gb510, Christ's College
   % NOISE GENERATOR SCHEMATIC AND PCB LAYOUT
   %
   \newpage
-  \section{Hardware Entropy Source Schematic and PCB}
+  \section{Hardware Entropy Source Schematic and PCB} \label{appendix:schematic}
   \vspace{-1cm}
     \begin{figure}[H]
       \centering
