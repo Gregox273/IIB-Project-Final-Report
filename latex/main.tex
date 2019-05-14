@@ -218,7 +218,7 @@ Gregory Brooks, gb510, Christ's College
     Initial investigations focused on using the iCE40 FPGA's differential I/O hardware to generate random bits which could be fed into a TRNG to generate random samples from an arbitrary distribution. Initially, it was hoped that simply leaving two comparator inputs floating would cause the output to fluctuate randomly --- in practice this did not occur as the comparator hardware requires one of the inputs to be biased within a narrow common mode voltage range (roughly half the I/O supply voltage, allowing the other input to swing about this reference voltage)~\cite{ice40_diff_io}. I decided to design a PCB to set this bias voltage, as well as provide an alternative entropy source in the form of a reverse biased zener diode producing avalanche noise. In theory, this circuit would provide a better i.e. less predictable source of entropy since, unlike the floating input pin, the avalanche noise (and therefore random number output) produced is independent of the device's external environment\footnote{A floating input pin can easily be influenced by its external environment e.g. picking up 50Hz noise from nearby electrical mains, resulting in a non-uniform frequency spectrum for random output.}.\\
 
     The circuit used in this noise generator is based on a design by Professor Paul Horowitz~\cite[p.~984]{art_of_electronics}, modified to operate at 3.3V and 0V power rails (rather than $\pm5V$). Avalanche noise produced by a reverse biased zener diode is amplified through a dual op-amp amplifier stage before being modulated about a 1.65V DC bias $\left(\frac{V_{cc}}{2}\right)$; this output can then be fed into one of the iCE40's comparator inputs. A second output on the PCB comes from a simple potentiometer circuit to set the common mode reference voltage on the second comparator input (with series resistors to allow for fine control about $\frac{V_{cc}}{2}$). Since the comparator output depends on whether the instantaneous voltage of the noise waveform lies above or below this reference voltage, this reference point can be adjusted to set the ratio of ones to zeros in the random comparator output.\\
-    \textit{$\langle$ TODO: finish e.g. talk about zener circuit specs (e.g. noise bandwidth)$\rangle$}
+    \textit{$\langle$ TODO: finish e.g. talk about theoretical circuit specs (e.g. noise bandwidth)$\rangle$}
 
     \begin{figure}[H]
       \centering
@@ -231,6 +231,23 @@ Gregory Brooks, gb510, Christ's College
     \textit{$\langle$ TODO: finish$\rangle$}
     \\
     The full circuit schematic and PCB layout can be found in Appendix \ref{appendix:schematic}, as well as the GitHub repository listed in Section \ref{subsection:GitHub}.
+
+      \subsubsection{Evaluation of Circuit Performance}
+
+      \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.5\textwidth]{fig/PCB_CROPPED.jpg}
+        \caption{The physical PCB, assembled by the CUED Dyson Centre's Electronics Development Group.}
+        \label{fig:pcb_cropped}
+      \end{figure}
+
+      \textit{$\langle$ TODO: finish e.g. talk about measured circuit specs (e.g. noise bandwidth)$\rangle$}\\
+      \textit{$\langle$ TODO: include all measurements (put large figures in appendix)$\rangle$}
+
+      One problem identified during testing was the tendency for the 12V boost regulator's inductor to get very hot during operation; whilst the circuit still functions in a room temperature environment, a further prototype iteration would use an inductor with a higher current rating to improve reliability. This might require a redesign of the PCB to accommodate a larger inductor package and footprint, although similarly sized alternatives are available\footnote{e.g. Coilcraft XAL4030-472MEC with a 5.1A RMS current rating, compared to the 1.2A for the Wurth Elektronik 744031004 currently being used.}
+
+      \textit{$\langle$ TODO: calc theoretical inductor current (see graph in datasheet for example)$\rangle$}\\
+      \textit{$\langle$ TODO: measure inductor voltage and hence inductor current - is it within spec?$\rangle$}
 
 
   \subsection{Uniform Random Number Generator}
