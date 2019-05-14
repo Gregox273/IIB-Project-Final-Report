@@ -60,7 +60,7 @@
   Compiling Physical Invariants to Hardware for a Secure \& Private Sensor Interface\\
 }
 \author{Gregory Brooks, gb510, Christ's College}
-\date{}
+\date{29 May 2019}
 \maketitle
 
 \tableofcontents
@@ -109,18 +109,30 @@ Gregory Brooks, gb510, Christ's College
 
 
 %
-% THEORRTICAL DEVELOPMENT
+% THEORETICAL DEVELOPMENT
 %
 
 \section{Theoretical Development}
-
+  The early stages of the project involved investigating potential research problems that would involve compiling Newton descriptions into a hardware description language. It soon became apparent that the Newton language was well suited to describing the relationships between sensors in a multi-sensor embedded system, thereby providing a basis to build upon the single-sensor state-of-the-art~\cite{Choi2018GuaranteeingLD}~\cite{diffpriv_2006}.
   \subsection{Brainstorming Example Applications}
-    \subsubsection{\textit{Intelligent} Noising}
-      \textit{$\langle$ TODO: allowing the compiler to choose how to add noise, rather than explicity stating where to add noise$\rangle$}
-
     \subsubsection{Digital Camera/Viola-Jones Facial Detection}
+      \textit{$\langle$ TODO $\rangle$}
 
     \subsubsection{Microphone}
+      \textit{$\langle$ TODO $\rangle$}
+
+    \subsubsection{\textit{Intelligent} Noising}
+      \textit{$\langle$ TODO: allowing the compiler to choose how to add noise, rather than explicity stating where to add noise$\rangle$}
+      This project investigates a system which allows a user to specify which measurement signals they wish to add random noise to. It is possible to generalise this idea to a hypothetical system which has control over how it applies random noise to measurement data in order to mask a more abstract form of information. One concrete example of this would be when working with images (e.g. the  Viola-Jones example above) --- given the requirement that individuals' identities should be obscured whilst still providing enough information for facial detection algorithms to work reliably, a system might choose to apply noise using, for example:
+
+      \begin{itemize}
+        \item Random noise added to pixel intensities.
+        \item Convolution with a random filter.
+        \item Random rearrangement of pixels.
+        \item A combination of multiple techniques.
+      \end{itemize}
+
+
 
 
   \subsection{System Specification}
@@ -201,9 +213,9 @@ Gregory Brooks, gb510, Christ's College
 
 \section{Deliverables}
   \subsection{Hardware Entropy Source}
-    One of the key components of a security/privacy application is a true random number generator (TRNG). Unlike a pseudorandom number generator (PRNG), which produces a predictable deterministic outcome, a true random number generator's output cannot be anticipated by an attacker, preserving system security and users' privacy. The output rate of TRNGs is often limited so can be used to seed a cryptographically secure PRNG (CSPRNG) algorithm to increase output data rate without significantly compromising security. This extra step was not required for this project, since the rate at which random numbers are consumed is relatively low.\\
+    One of the key components of a security/privacy application is a true random number generator (TRNG). Unlike a pseudorandom number generator (PRNG), which produces a predictable deterministic outcome, a true random number generator's output cannot be anticipated by an attacker, preserving system security and users' privacy. The output bit rate of TRNGs is often limited so can be used to seed a cryptographically secure PRNG (CSPRNG) algorithm to increase output bit rate without significantly compromising security. This extra step was not required for this project, since the rate at which random numbers are consumed is relatively low.\\
 
-    I investigated using the iCE40 FPGA's differential I/O hardware to generate random bits which could be fed into a TRNG to generate random samples from an arbitrary distribution. Initially, it was hoped that simply leaving two comparator inputs floating would cause the output to fluctuate randomly --- in practice this did not occur as the comparator hardware requires one of the inputs to be biased within a narrow common mode voltage range (roughly half the I/O supply voltage, allowing the other input to swing about this reference voltage)~\cite{ice40_diff_io}. I decided to design a PCB to set this bias voltage, as well as provide an alternative entropy source in the form of a reverse biased zener diode producing avalanche noise. In theory, this circuit would provide a better i.e. less predictable source of entropy since, unlike the floating input pin, the avalanche noise (and therefore random number output) produced is independent of the device's external environment\footnote{A floating input pin can easily be influenced by its external environment e.g. picking up 50Hz noise from nearby electrical mains, resulting in a non-uniform frequency spectrum for random output.}.\\
+    Initial investigations focused on using the iCE40 FPGA's differential I/O hardware to generate random bits which could be fed into a TRNG to generate random samples from an arbitrary distribution. Initially, it was hoped that simply leaving two comparator inputs floating would cause the output to fluctuate randomly --- in practice this did not occur as the comparator hardware requires one of the inputs to be biased within a narrow common mode voltage range (roughly half the I/O supply voltage, allowing the other input to swing about this reference voltage)~\cite{ice40_diff_io}. I decided to design a PCB to set this bias voltage, as well as provide an alternative entropy source in the form of a reverse biased zener diode producing avalanche noise. In theory, this circuit would provide a better i.e. less predictable source of entropy since, unlike the floating input pin, the avalanche noise (and therefore random number output) produced is independent of the device's external environment\footnote{A floating input pin can easily be influenced by its external environment e.g. picking up 50Hz noise from nearby electrical mains, resulting in a non-uniform frequency spectrum for random output.}.\\
 
     The circuit used in this noise generator is based on a design by Professor Paul Horowitz~\cite[p.~984]{art_of_electronics}, modified to operate at 3.3V and 0V power rails (rather than $\pm5V$). Avalanche noise produced by a reverse biased zener diode is amplified through a dual op-amp amplifier stage before being modulated about a 1.65V DC bias $\left(\frac{V_{cc}}{2}\right)$; this output can then be fed into one of the iCE40's comparator inputs. A second output on the PCB comes from a simple potentiometer circuit to set the common mode reference voltage on the second comparator input (with series resistors to allow for fine control about $\frac{V_{cc}}{2}$). Since the comparator output depends on whether the instantaneous voltage of the noise waveform lies above or below this reference voltage, this reference point can be adjusted to set the ratio of ones to zeros in the random comparator output.\\
     \textit{$\langle$ TODO: finish e.g. talk about zener circuit specs (e.g. noise bandwidth)$\rangle$}
@@ -286,40 +298,43 @@ Gregory Brooks, gb510, Christ's College
     Let $\hat{X}$ be a random variable denoting a sensor measurement, including any measurement error.
     \\
     \\
+    Let $N_{Laplace}^\lambda$ be a random variable following a Laplace distribution with parameter $\lambda$. This represents random noise added to sensor measurements.
+    \\
+    \\
     Let $X$ be a random variable representing a \textit{noised} sensor measurement i.e. the masked value that the differential privacy system provides to the outside world after applying Laplace distributed noise to a measurement:
     \begin{equation}
-      X = \hat{X} + N_{Laplace}
+      X = \hat{X} + N_{Laplace}^\lambda
     \end{equation}
-    A measurement event comprises the variable $\hat{X}$ taking on value $\hat{x}_i$. Similarly, a noising event can be defined by $X$ taking value $x_i = \hat{x}_i + n_i$.
+    A measurement event comprises the variable $\hat{X}$ taking on value $\hat{x}$. Similarly, a noising event can be defined by $X$ taking value $x = \hat{x} + n$. We define an embedded system as having $n$ sensors with measurements distributed as $\hat{X}_i$, $1 \leq i \leq n$.
     \\
     \\
-    Let $Y$ denote a variable derived from one or more $X$ variables, such as measurements from different sensors in an embedded system:
+    Let $Y$ denote a variable derived from one or more \textit{noised measurements}, $X$, such as measurements from different sensors in an embedded system:
     \begin{align*}
       Y & = f(X_1, X_2, ..., X_n) = f(\bf{X})\\
-      y_i & = f(x_{i1}, x_{i2}, ..., x_{in}) = f(\bf{x_i})
+      y & = f(x_{1}, x_{2}, ..., x_{n}) = f(\bf{x})
     \end{align*}
     This same mapping function $f(\bf{x})$ can take unnoised measurements as arguments:
     \begin{align*}
       \hat{Y} & = f(\hat{X}_1, \hat{X}_2, ..., \hat{X}_n) = f(\bf{\hat{X}})\\
-      \hat{y}_i & = f(\hat{x}_{i1}, \hat{x}_{i2}, ..., \hat{x}_{in}) = f(\bf{\hat{x}_i})
+      \hat{y} & = f(\hat{x}_{1}, \hat{x}_{2}, ..., \hat{x}_{n}) = f(\bf{\hat{x}})
     \end{align*}
-    If measurements $x_{i1}$ to $x_{in}$ are taken, a value for $y_i$ can be computed from them --- variable $Y$ has experienced some privacy loss, $l_Y$ that can be calculated as a log-likelihood ratio~\cite{Choi2018GuaranteeingLD} (Equation \ref{eqn:privacy_loss}). This privacy loss function requires two parameters,  $\hat{y}_a$ and $\hat{y}_b$, which are the possible \textit{true} i.e. unnoised values for $\hat{Y}$ that maximise the privacy loss (Equation \ref{eqn:argmax}).
+    Using this function, an untrusted party can compute an instance value $y$ by taking measurements $x_{1}$ to $x_{n}$ --- variable $\hat{Y}$ has experienced some privacy loss, $l_{\hat{Y}}$, since a noised instance value $y$ has effectively been released to the outside world (i.e. untrusted parties), revealing some information about the private noise-free value $\hat{y}$ taken by variable $\hat{Y}$. The privacy loss can be quantified using a log-likelihood ratio~\cite{Choi2018GuaranteeingLD} (Equation \ref{eqn:privacy_loss}). This privacy loss function requires two parameters,  $\hat{y}_a$ and $\hat{y}_b$, which are the possible \textit{true} i.e. noise-free values for $\hat{Y}$ that maximise the privacy loss (Equation \ref{eqn:argmax}).
     \begin{equation}
       y_{obs} = f(\bf{x}_{obs}) = \text{value for $y$ calculated from noised measurements $\bf{x}_i$} \nonumber\\
     \end{equation}
     \begin{align}
-      % \bf{\hat{x}_a}, \bf{\hat{x}_b} & = \argmax_{\bf{\hat{x}_a}, \bf{\hat{x}_b}} l_Y(\bf{\hat{x}_a}, \bf{\hat{x}_b}) \label{eqn:argmax}\\
-      % l_Y(\bf{\hat{x}_a}, \bf{\hat{x}_b}) & = log \left( \frac{Pr\{ Y = y_{obs} | \bf{\hat{X}} = \bf{\hat{x}_a} \}}{Pr\{ Y = y_{obs} | \bf{\hat{X}} = \bf{\hat{x}_b} \}} \right) \label{eqn:privacy_loss}
-      \hat{y}_a, \hat{y}_b & = \argmax_{\hat{y}_a, \hat{y}_b} l_Y(\hat{y}_a, \hat{y}_b) \label{eqn:argmax}\\
-      l_Y(\hat{y}_a, \hat{y}_b) & = log \left( \frac{Pr\{ Y = y_{obs} | \hat{Y} = \hat{y}_a \}}{Pr\{ Y = y_{obs} | \hat{Y} = \hat{y}_b \}} \right) \label{eqn:privacy_loss}
+      % \bf{\hat{x}_a}, \bf{\hat{x}_b} & = \argmax_{\bf{\hat{x}_a}, \bf{\hat{x}_b}} l_{\hat{Y}}(\bf{\hat{x}_a}, \bf{\hat{x}_b}) \label{eqn:argmax}\\
+      % l_{\hat{Y}}(\bf{\hat{x}_a}, \bf{\hat{x}_b}) & = log \left( \frac{Pr\{ Y = y_{obs} | \bf{\hat{X}} = \bf{\hat{x}_a} \}}{Pr\{ Y = y_{obs} | \bf{\hat{X}} = \bf{\hat{x}_b} \}} \right) \label{eqn:privacy_loss}
+      \hat{y}_a, \hat{y}_b & = \argmax_{\hat{y}_a, \hat{y}_b} l_{\hat{Y}}(\hat{y}_a, \hat{y}_b) \label{eqn:argmax}\\
+      l_{\hat{Y}}(\hat{y}_a, \hat{y}_b) & = log \left( \frac{Pr\{ Y = y_{obs} | \hat{Y} = \hat{y}_a \}}{Pr\{ Y = y_{obs} | \hat{Y} = \hat{y}_b \}} \right) \label{eqn:privacy_loss}
     \end{align}
-    Equation \ref{eqn:privacy_loss} can be rewritten as follows, where $\bf{\hat{x}_a}$ and $\bf{\hat{x}_b}$ are chosen to maximise $l_Y$ as before, but subject to constraints $\bf{\hat{x}_a}$ $ = f^{-1}(\hat{y}_a)$ and $\bf{\hat{x}_b}$ $ = f^{-1}(\hat{y}_b)$:
+    Equation \ref{eqn:privacy_loss} can be rewritten as follows, where $\bf{\hat{x}_a}$ and $\bf{\hat{x}_b}$ are chosen to maximise $l_{\hat{Y}}$ as before, but subject to constraints $\bf{\hat{x}_a}$ $ = f^{-1}(\hat{y}_a)$ and $\bf{\hat{x}_b}$ $ = f^{-1}(\hat{y}_b)$:
     \begin{align}
-      l_Y(\bf{\hat{x}_a}, \bf{\hat{x}_b}) & = log \left( \frac{Pr\{ \bf{X} = \bf{x}_{obs} | \bf{\hat{X}} = \bf{\hat{x}_a} \}}{Pr\{ \bf{X} = \bf{x}_{obs} | \bf{\hat{X}} = \bf{\hat{x}_b} \}} \right) \label{eqn:exact_indirect_priv_loss}
+      l_{\hat{Y}}(\bf{\hat{x}_a}, \bf{\hat{x}_b}) & = log \left( \frac{Pr\{ \bf{X} = \bf{x}_{obs} | \bf{\hat{X}} = \bf{\hat{x}_a} \}}{Pr\{ \bf{X} = \bf{x}_{obs} | \bf{\hat{X}} = \bf{\hat{x}_b} \}} \right) \label{eqn:exact_indirect_priv_loss}
     \end{align}
     This constrained optimisation problem could be solved to calculate an exact value for privacy loss. Alternatively, an upper bound on privacy loss can be determined using a far simpler calculation (the sum of privacy losses for each individual sensor):
     \begin{align}
-      l_Y(\bf{\hat{x}_a}, \bf{\hat{x}_b}) & = log \left( \prod_{u=1}^n \frac{Pr\{ X_u = x_{u,obs} | \hat{X}_u = \hat{x}_{u,a} \}} {Pr\{ X_u = x_{u,obs} | \hat{X}_u = \hat{x}_{u,b} \}} \right) \nonumber \\
+      l_{\hat{Y}}(\bf{\hat{x}_a}, \bf{\hat{x}_b}) & = log \left( \prod_{u=1}^n \frac{Pr\{ X_u = x_{u,obs} | \hat{X}_u = \hat{x}_{u,a} \}} {Pr\{ X_u = x_{u,obs} | \hat{X}_u = \hat{x}_{u,b} \}} \right) \nonumber \\
       & \leq log \left( \prod_{u=1}^n \frac{Pr\{ X_u = x_{u,obs} | \hat{X}_u = \hat{x}_{u,c} \}}{Pr\{ X_u = x_{u,obs} | \hat{X}_u = \hat{x}_{u,d} \}} \right) \label{eqn:upper_bound} \\
       \text{where:} & \nonumber \\
       & \hat{x}_{u,c} = \argmax_{\hat{x}_{u,c}}Pr\{ X_u = x_{u,obs} | \hat{X}_u = \hat{x}_{u,c} \} \nonumber \\
@@ -329,7 +344,7 @@ Gregory Brooks, gb510, Christ's College
 
     Note that this privacy loss is incurred when all values $x_{1,obs}$ to $x_{n,obs}$ are provided to the outside world (i.e. the event where an attacker transitions from having no information to the system to being provided with $x_{1,obs}$ to $x_{n,obs}$); for each subsequent individual query response $x_{u,obs}$, the resulting privacy loss is only:
     \begin{align}
-      l_Y(\bf{\hat{x}_a}, \bf{\hat{x}_b}) & = log \left( \frac{Pr\{ X_u = x_{u,obs} | \hat{X}_u = \hat{x}_{u,a} \}} {Pr\{ X_u = x_{u,obs} | \hat{X}_u = \hat{x}_{u,b} \}} \right)
+      l_{\hat{Y}}(\bf{\hat{x}_a}, \bf{\hat{x}_b}) & = log \left( \frac{Pr\{ X_u = x_{u,obs} | \hat{X}_u = \hat{x}_{u,a} \}} {Pr\{ X_u = x_{u,obs} | \hat{X}_u = \hat{x}_{u,b} \}} \right)
     \end{align}
      where values for $\bf{\hat{x}_a}$ and $\bf{\hat{x}_b}$ are the same as those used in Equation \ref{eqn:exact_indirect_priv_loss} (if calculating exact privacy loss) or Equation \ref{eqn:upper_bound} (if calculating an upper bound).\\
 
@@ -351,10 +366,10 @@ Gregory Brooks, gb510, Christ's College
     Equation \ref{eqn:p_x_given_y_hat} can be substituted into Equation \ref{eqn:priv_loss_y_hat_initial}, the formula for privacy loss incurred by $\hat{Y}$ as a result of observing a value $x_{obs}$ for $X$. This results in Equation \ref{eqn:priv_loss_y_hat_final}:
 
     \begin{align}
-      l_y(\hat{y}_a, \hat{y}_b) & = log \left( \frac{Pr\{X = x_{obs} | \hat{Y} = \hat{y}_a\}}{Pr\{X = x_{obs} | \hat{Y} = \hat{y}_b\}} \right) \label{eqn:priv_loss_y_hat_initial} \\
+      l_{\hat{Y}}(\hat{y}_a, \hat{y}_b) & = log \left( \frac{Pr\{X = x_{obs} | \hat{Y} = \hat{y}_a\}}{Pr\{X = x_{obs} | \hat{Y} = \hat{y}_b\}} \right) \label{eqn:priv_loss_y_hat_initial} \\
       & = log \left( \frac{\int_{R_{\hat{X}}} Pr\{X = x_{obs}| \hat{X} = \hat{x}\} Pr\{\hat{X}=\hat{x}|\hat{Y} = \hat{y}_a\} d\hat{x} }{\int_{R_{\hat{X}}} Pr\{X = x_{obs}| \hat{X} = \hat{x}\} Pr\{\hat{X}=\hat{x}|\hat{Y} = \hat{y}_b\} d\hat{x} }\right) \label{eqn:priv_loss_y_hat_final}
     \end{align}
-    for $\hat{y}_a, \hat{y}_b = \argmax_{\hat{y}_a, \hat{y}_b}(l_y)$ as before.
+    for $\hat{y}_a, \hat{y}_b = \argmax_{\hat{y}_a, \hat{y}_b}(l_{\hat{Y}})$ as before.
   %
   % URNG BLOCK DIAGRAM
   %
