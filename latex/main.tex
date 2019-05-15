@@ -86,6 +86,9 @@ Gregory Brooks, gb510, Christ's College
 
 \textit{$\langle$ TODO: write this last$\rangle$}
 
+This project investigates the idea of using the Newton~\cite{Newton} physics description language as part of a multi-sensor embedded local differential privacy system implemented on an iCE40 FPGA.
+\textit{$\langle$ TODO: tidy up the above and expand on it if necessary$\rangle$}
+
   %
   % SYSTEM DIAGRAM
   %
@@ -103,6 +106,23 @@ Gregory Brooks, gb510, Christ's College
 %
 
 \section{Introduction}
+
+  \textit{Differential privacy} can be thought of as a constraint applied to queries for information from a database whereby information about individual members of the database is obscured whilst still releasing useful aggregate information about a population/demographic as a whole. A simple method of implementing this would be the addition of zero mean noise to database entries --- whilst the noise would obscure the \textit{true} value of individual data points, the mean value of the dataset would remain intact. More formally, \textit{$\epsilon$-differential privacy} is defined by Dwork and Smith~\cite{dwork2010differential} as follows:\\
+  \\
+  ``A randomized function K gives \textit{$\epsilon$-differential privacy} if for all data sets $x$ and $x'$ differing on at most one element, and all $S \subseteq Range(K)$,
+  \begin{equation}
+    Pr[K(x) \in S] \leq exp(\epsilon) \times Pr[K(x') \in S],
+  \end{equation}
+  where the probability space in each case is over the coin flips of the mechanism K.''\\
+
+  Throughout this project, the chosen randomised function K is the Laplace mechanism i.e. the addition of zero mean Laplace distributed random noise to \textit{private} data such as a measurement from a sensor\footnote{the \textit{databases} in this scenario are simply single sensor measurements hence any two \textit{databases} will always differ by at most a single element.} to produce a \textit{noised output} that can be released to untrusted observers (the outside world). This technique provides privacy by ensuring that every possible measurement value (i.e. any value within the sensor measurement range) has a similar posterior probability of being the \textit{true private} value given the observed \textit{noised output}. An outside observer can use the \textit{noised output} to estimate the value of \textit{private} data with some uncertainty but should never be able to deduce it with complete certainty.\\
+
+  The Laplace distribution used by this method has parameter $\frac{\lambda}{\epsilon}$. $\lambda$ refers to the \textit{global sensitivity} of the database query function; in this scenario this is simply the maximum difference between possible sensor measurements i.e. a sensor's measurement range. $\epsilon$ is a privacy scaling parameter, where a smaller $\epsilon$ value results in greater privacy by applying noise with a greater variance, thereby reducing the amount of information each \textit{noised output} value reveals about the \textit{private} data. For a particular application, deciding on an $\epsilon$ value is a tradeoff between utility and privacy since, in the limiting case, an $\epsilon$ value of zero means that the system outputs no useful information (just random noise), consequently keeping the \textit{private} data completely private.\\
+
+  Within the context of embedded electronic systems, recent work (for example, this project builds heavily on the work of Choi et al.~\cite{Choi2018GuaranteeingLD}) has investigated the implementation of differential privacy techniques on low power hardware such as the processors found in smartphones and Internet-of-Things devices. In contrast to the conventional differential privacy model, where a trusted database stores \textit{private} data collected from local hardware, a local differential privacy architecture involves \textit{private} data being masked at the source (e.g. an embedded sensor system) before being sent to an untrusted database~\cite{Kairouz:2014}. This local approach can result in a more secure system since \textit{private} data does not need to be recorded anywhere nor transmitted from local hardware to a remote server.\\
+
+  One challenge associated with implementing local differential privacy is that the randomised function K used to mask \textit{private} data can be difficult to implement on low power hardware --- one of the findings presented by Choi et al.~\cite{Choi2018GuaranteeingLD} is that a finite precision implementation of the Laplace mechanism can lead to infinite privacy loss, since certain specific values for \textit{noised output} data can reveal the \textit{true} values for \textit{private} unnoised data with complete certainty. This problem is most apparent on low power hardware utilising low precision fixed point arithmetic. \textit{$\langle$ TODO: finish this paragraph (and introduction section e.g. talk about Newton and multi sensor)$\rangle$}\\
+
 
 \newpage
 
@@ -244,7 +264,7 @@ Gregory Brooks, gb510, Christ's College
       \textit{$\langle$ TODO: finish e.g. talk about measured circuit specs (e.g. noise bandwidth)$\rangle$}\\
       \textit{$\langle$ TODO: include all measurements (put large figures in appendix)$\rangle$}
 
-      One problem identified during testing was the tendency for the 12V boost regulator's inductor to get very hot during operation; whilst the circuit still functions in a room temperature environment, a further prototype iteration would use an inductor with a higher current rating to improve reliability. This might require a redesign of the PCB to accommodate a larger inductor package and footprint, although similarly sized alternatives are available\footnote{e.g. Coilcraft XAL4030-472MEC with a 5.1A RMS current rating, compared to the 1.2A for the Wurth Elektronik 744031004 currently being used.}
+      One problem identified during testing was the tendency for the 12V boost regulator's inductor to get very hot during operation; whilst the circuit still functions in a room temperature environment, a further prototype iteration would use an inductor with a higher current rating to improve reliability. This might require a redesign of the PCB to accommodate a larger inductor package and footprint, although similarly sized alternatives are available\footnote{e.g. Coilcraft XAL4030-472MEC with a 5.1A RMS current rating, compared to the 1.2A for the Wurth Elektronik 744031004 currently being used. The datasheet for the ST8R00 step-up regulator states an absolute maximum inductor current of 3A~\cite{ST8R00}.}.
 
       \textit{$\langle$ TODO: calc theoretical inductor current (see graph in datasheet for example)$\rangle$}\\
       \textit{$\langle$ TODO: measure inductor voltage and hence inductor current - is it within spec?$\rangle$}
@@ -431,18 +451,17 @@ Gregory Brooks, gb510, Christ's College
   %
 
   \section{EuroSys 2019 Poster: Safeguarding Sensor Device Drivers Using Physical Constraints}
-    \subsection{Description}
-      This poster~\cite{eurosys_poster} was submitted to EuroSys 2019, to communicate the idea of using information about a physical system to condition electronic sensor measurements. The example discussed in the poster is the detection and safeguarding against transduction attacks~\cite{Fu_2018}, where an attacker manipulates a sensor's output to gain control over a system. For example, research by Liu, Yan and Xu~\cite{autonomous_vehicles} has shown that the proximity sensors on a Tesla automobile can be fooled into providing erroneous (or even no) data using ultrasonic interference produced by a device built using off-the-shelf electronic components. An attacker is able to influence the system's behaviour without needing to directly manipulate the execution of the vehicle's firmware.\\
+    This poster~\cite{eurosys_poster} was submitted to EuroSys 2019, to communicate the idea of using information about a physical system to condition electronic sensor measurements. The example discussed in the poster is the detection and safeguarding against transduction attacks~\cite{Fu_2018}, where an attacker manipulates a sensor's output to gain control over a system. For example, research by Liu, Yan and Xu~\cite{autonomous_vehicles} has shown that the proximity sensors on a Tesla automobile can be fooled into providing erroneous (or even no) data using ultrasonic interference produced by a device built using off-the-shelf electronic components. An attacker is able to influence the system's behaviour without needing to directly manipulate the execution of the vehicle's firmware.\\
 
-      The poster illustrates how the Newton language can be used to describe a physical system, in this case an accelerometer mounted to a PCB without vibration isolation. In this scenario, vibrations of the PCB (e.g. due to a nearby loudspeaker or even, in the case of a smartphone, due to loudspeakers mounted to the PCB) are measured by the accelerometer, obscuring a \textit{true} acceleration measurement i.e. acceleration of the entire system due to gravity. This effect is particularly pronounced if the board is driven at its resonant frequency, since the resulting oscillation will have a greater amplitude~\cite{adi}. This phenomenon could, in theory, be used as part of a transduction attack e.g. where a smartphone's loudspeaker is used to interfere with a software application's estimate of the device's physical orientation.\\
+    The poster illustrates how the Newton language can be used to describe a physical system, in this case an accelerometer mounted to a PCB without vibration isolation. In this scenario, vibrations of the PCB (e.g. due to a nearby loudspeaker or even, in the case of a smartphone, due to loudspeakers mounted to the PCB) are measured by the accelerometer, obscuring a \textit{true} acceleration measurement i.e. acceleration of the entire system due to gravity. This effect is particularly pronounced if the board is driven at its resonant frequency, since the resulting oscillation will have a greater amplitude~\cite{adi}. This phenomenon could, in theory, be used as part of a transduction attack e.g. where a smartphone's loudspeaker is used to interfere with a software application's estimate of the device's physical orientation.\\
 
-      To test whether this phenomenon can be distinguished from regular measurement noise, I performed an experiment~\cite{poster_experiment} using an MMA8451Q accelerometer mounted on an FRDM-KL03Z board. With the sensor resting stationary on a horizontal surface, five minutes worth of accelerometer samples were recorded at 10Hz in order to obtain a probability distribution for the accelerometer's measurement noise (along the z axis, aligned with the vertical); this data was empirically observed to fit a Laplace distribution. This measurement was then repeated with the board resting on top of a smartphone playing a 440Hz audio tone --- in theory, this data (random samples from a sinusoid) would fit a bimodal beta distribution (see section \ref{Poster_Derivation} for derivation) allowing a log likelihood ratio to be computed:
+    To test whether this phenomenon can be distinguished from regular measurement noise, I performed an experiment~\cite{poster_experiment} using an MMA8451Q accelerometer mounted on an FRDM-KL03Z board. With the sensor resting stationary on a horizontal surface, five minutes worth of accelerometer samples were recorded at 10Hz in order to obtain a probability distribution for the accelerometer's measurement noise (along the z axis, aligned with the vertical); this data was empirically observed to fit a Laplace distribution. This measurement was then repeated with the board resting on top of a smartphone playing a 440Hz audio tone --- in theory, this data (random samples from a sinusoid) would fit a bimodal beta distribution (see section \ref{Poster_Derivation} for derivation) allowing a log likelihood ratio to be computed:
 
-      \begin{equation}
-        LLR = -2 \sum_{i = 1}^{N} \frac{\frac{1}{\pi}\left| \frac{1}{\sqrt{A^2\omega^4 - \ddot{x}_i^2}} \right|}{\frac{1}{2b} exp\left(-\frac{|\ddot{x}_i-\mu|}{b}\right)}
-      \end{equation}
+    \begin{equation}
+      LLR = -2 \sum_{i = 1}^{N} \frac{\frac{1}{\pi}\left| \frac{1}{\sqrt{A^2\omega^4 - \ddot{x}_i^2}} \right|}{\frac{1}{2b} exp\left(-\frac{|\ddot{x}_i-\mu|}{b}\right)}
+    \end{equation}
 
-      The value of this log-likelihood ratio indicates whether the audio tone based transduction attack described here is likely to be occuring. For the data collected in the experiment, the log-likelihood ratio was found to be around -24600.08 whilst the tone was playing, and +3731 when it was not; the negative value indicates that the measurements taken whilst the tone was playing were indeed more accurately described by the bimodal beta distribution, compared to the Laplace distribution of sensor noise, and vice versa for the positive value.
+    The value of this log-likelihood ratio indicates whether the audio tone based transduction attack described here is likely to be occuring. For the data collected in the experiment, the log-likelihood ratio was found to be around -24600.08 whilst the tone was playing, and +3731 when it was not; the negative value indicates that the measurements taken whilst the tone was playing were indeed more accurately described by the bimodal beta distribution, compared to the Laplace distribution of sensor noise, and vice versa for the positive value.
 
     \subsection{Derivation of Bimodal Beta Distribution} \label{Poster_Derivation}
     Let T be a uniformly distributed random variable representing the time at which acceleration is sampled:
@@ -485,10 +504,6 @@ Gregory Brooks, gb510, Christ's College
         0 & \text{otherwise}
       \end{cases}
     \end{align}
-
-
-    \subsection{Poster}
-      \textit{$\langle$ TODO: insert the poster into this report?$\rangle$}
 
 \end{appendix}
 
