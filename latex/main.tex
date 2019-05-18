@@ -128,9 +128,45 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
 
     One challenge associated with implementing local differential privacy is that the randomised function K used to mask \textit{private} data can be difficult to implement on low power hardware --- one of the findings presented by Choi et al.~\cite{Choi2018GuaranteeingLD} is that a finite precision implementation of the Laplace mechanism can lead to infinite privacy loss, since certain specific values for \textit{noised output} data can reveal the \textit{true} values for \textit{private} unnoised data with complete certainty. This problem is most apparent on low power hardware utilising low precision fixed point arithmetic. This problem can be overcome by ensuring \textit{noised output} remains within a safe range so that privacy loss can never be infinite; this can be achieved by truncating values if they fall outside the range or by resampling the random noise if it would result in a \textit{noised output} value outside the acceptable range~\cite{Choi2018GuaranteeingLD}.\\
 
-    Existing research regarding embedded systems has focused on single sensor systems for the sake of simplicity~\cite{Choi2018GuaranteeingLD}. Introducing multiple related sensors introduces complications when quantifying privacy loss, since releasing a noised value of one particular measurement can indirectly reveal information about others. For example, if a particular embedded system contains a GPS and accelerometer, accelerometer measurements can be integrated over time to gain an estimate for GPS position --- some privacy loss quantity would have to be deducted from the privacy budget allocated to the GPS as a result of releasing noised acceleration values. This problem is analysed in detail in Section \ref{multi_sensor_differential_privacy_loss_section}, with detailed mathematical analysis in Appendix \ref{appendix:diff_priv_loss}.
+    Existing research regarding embedded systems has focused on single sensor systems~\cite{Choi2018GuaranteeingLD}. Introducing multiple related sensors introduces complications when quantifying privacy loss, since releasing a noised value of one particular measurement can indirectly reveal information about others. For example, if a particular embedded system contains a GPS and accelerometer, accelerometer measurements can be integrated over time to gain an estimate for GPS position --- some privacy loss quantity would have to be deducted from the privacy budget allocated to the GPS as a result of releasing noised acceleration values. One of the aims of this project was to analyse this problem in detail --- this work is presented in Section \ref{multi_sensor_differential_privacy_loss_section}, with detailed mathematical analysis in Appendix \ref{appendix:diff_priv_loss}.
 
   \subsection{The Newton Language}
+    \textit{Newton} is a physics description language developed by Jonathan Lim and Phillip Stanley-Marbell~\cite{Newton}. A Newton description can specify dimensionally annotated \textit{signals} i.e. physical quantities such as measurements from a sensor, and invariants/constraints relating these signals (such as the physical laws governing a particular system). Figures \ref{fig:newton_description} and \ref{fig:resonating_board} and Equation \ref{eqn:board_resonance} illustrate a basic example of the langage being used to describe the physical resonance of a circuit board.
+
+    \begin{figure}[H]
+      \centering
+      \includegraphics[width=\textwidth]{fig/newton_description.png}
+      \caption{Example of a Newton description for a physically resonating circuit board (modelled in two dimensions) governed by Equation \ref{eqn:board_resonance}. Figure sourced from a poster produced in parallel to this project~\cite{eurosys_poster}.}
+      \label{fig:newton_description}
+    \end{figure}
+
+    \begin{equation}
+      a = Q_{bd} d_{bd} \omega^2sin(\omega t),
+      \label{eqn:board_resonance}
+    \end{equation}
+
+    where:
+    \begin{itemize}
+      \item $a$ represents board acceleration,
+      \item $Q_{bd}$ represents quality factor,
+      \item $d_{bd}$ represents board displacement amplitude,
+      \item $\omega$ represents angular resonant frequency,
+      \item $t$ represents time.
+    \end{itemize}
+
+    \begin{figure}[H]
+      \centering
+      \includegraphics[width=\textwidth]{fig/resonating_board.png}
+      \caption{The system modelled by Equation \ref{eqn:board_resonance}. Figure sourced from a poster produced in parallel to this project~\cite{eurosys_poster}.}
+      \label{fig:resonating_board}
+    \end{figure}
+
+    At the time of writing the Newton language and compiler is still under development by the Physical Computation Laboratory~\cite{physcomp}; the Newton compiler frontend is able to transform a human-readable Newton description into an intermediate representation, a tree structure that can be easily traversed by a computer.\\
+
+    Within the context of this project, Newton provides the ability to describe the relationships between the sensors in a multi-sensor embedded system. This information is necessary to be able to quantify privacy losses in a multi-sensor system.
+
+  \subsection{Random Number Generation}
+
 
 
 \newpage
