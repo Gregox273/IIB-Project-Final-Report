@@ -109,7 +109,7 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
 %
 
 \section{Introduction and Background}
-  \subsection{Differential Privacy}
+  \subsection{Differential Privacy} \label{intro_diff_priv}
     \textit{Differential privacy} can be thought of as a constraint applied to queries for information from a database whereby information about individual members of the database is obscured whilst still releasing useful aggregate information about a population/demographic as a whole. A simple method of implementing this would be the addition of zero mean noise to database entries --- whilst the noise would obscure the \textit{true} value of individual data points, the mean value of the dataset would remain intact. More formally, \textit{$\epsilon$-differential privacy} is defined by Dwork and Smith~\cite{dwork2010differential} as follows:\\
     \\
     ``A randomized function K gives \textit{$\epsilon$-differential privacy} if for all data sets $x$ and $x'$ differing on at most one element, and all $S \subseteq Range(K)$,
@@ -161,12 +161,12 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
       \label{fig:resonating_board}
     \end{figure}
 
-    At the time of writing the Newton language and compiler is still under development by the Physical Computation Laboratory~\cite{physcomp}; the Newton compiler frontend is able to transform a human-readable Newton description into an intermediate representation, a tree structure that can be easily traversed by a computer.\\
+    At the time of writing the Newton language and compiler is still under development by the Physical Computation Laboratory~\cite{physcomp}; the Newton compiler frontend is able to transform a human-readable Newton description into an intermediate representation, a tree structure that can be easily traversed by a computer. The motivation for this project was the idea that this information could be used by a compiler backend to generate a hardware description (e.g. Verilog).\\
 
     Within the context of this project, Newton provides the ability to describe the relationships between the sensors in a multi-sensor embedded system. This information is necessary to be able to quantify privacy losses in a multi-sensor system.
 
-  \subsection{Random Number Generation}
-
+  \subsection{Random Number Generation} \label{subsection:intro_rng}
+    One important component of a local differential privacy system is a true random number generator (TRNG) to generate the random noise used to obscure \textit{private} data\footnote{In a security related application, pseudorandom number generators such as linear feedback shift registers are unsuitable since an attacker would be able to predict their output}. The Laplace mechanism requires random noise to be Laplace distributed, introducing additional complexity compared to uniform or Gaussian distributed RNGs. The resource constraints imposed by the iCE40 FPGA dictated the need to implement a hardware efficient RNG to generate this Laplace distributed noise. A research article by De Schryver et al.~\cite{DeSchryver} outlines a possible architecture for such a system, based on a lookup table indexed by a floating point representation of the output of a uniform random number generator. This architecture was implemented in Verilog and analysed as part of this project.
 
 
 \newpage
@@ -178,10 +178,22 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
 %
 
 \section{Theoretical Development}
-  The early stages of the project involved investigating potential research problems that would involve compiling Newton descriptions into a hardware description language. It soon became apparent that the Newton language was well suited to describing the relationships between sensors in a multi-sensor embedded system, thereby providing a basis to build upon the single-sensor state-of-the-art~\cite{Choi2018GuaranteeingLD}~\cite{diffpriv_2006}.
+  The early stages of the project involved brainstorming and investigating potential research problems that would involve compiling Newton descriptions into a hardware description language. It soon became apparent that the Newton language was well suited to describing the relationships between sensors in a multi-sensor embedded system, thereby providing a basis to build upon the single-sensor state-of-the-art~\cite{Choi2018GuaranteeingLD}~\cite{diffpriv_2006}.
   \subsection{Brainstorming Example Applications}
+    Below are some example applications of an iCE40 based differential privacy system that eventually led to the project's focus on multi-sensor systems.
     \subsubsection{Digital Camera/Viola-Jones Facial Detection}
-      \textit{$\langle$ TODO $\rangle$}
+      iCE40 FPGAs are able to drive digital cameras and perform facial recognition, as illustrated by the iCE40 Ultraplus Mobile Development Platform~\cite{iCE40_MDP}. In this context a differential privacy system might aim to apply random noise to an image in such a way that the identity of an individual can be obscured whilst still preserving enough information for facial detection algorithms to function correctly.  A Python script available in this report's GitHub repository\footnote{See Section \ref{subsection:GitHub}.} demonstrates this idea using OpenCV~\cite{opencv-contrib-python} --- the script converts a photo of a face to greyscale and subsamples to 32x32 size (effectively low pass filtering to remove high spatial frequencies) before Laplace distributed random noise ($\lambda$ = 25, mean = 0) is added to the pixel intensity values, similarly to the Laplace method described in Section \ref{intro_diff_priv}. The script then uses a Viola-Jones~\cite{Viola01rapidobject} classifier to detect faces in the images before and after the application of noise, demonstrating that a face can be detected in both cases provided the variance of the noise distribution is not too great to drown out all relevant information (analogous to the $\epsilon$ value in Section \ref{intro_diff_priv} being too small). The results of running this script can be observed in Figure \ref{fig:viola_jones}; the addition of random noise somewhat obscures the identity of the subject in the photo whilst still allowing a Viola-Jones facial detection to function. The demonstration featured here is a simple proof-of-concept; random distortion could be applied to the image in many different ways e.g. random displacement of pixels.
+
+      \begin{figure}[H]
+        \centering
+        \subfloat[Original photo]{\includegraphics[width=0.3\textwidth]{fig/face.jpg}}
+        \subfloat[Subsampled greyscale image]{\includegraphics[width=0.3\textwidth]{fig/resized_image.jpg}}
+        \subfloat[Random noise added]{\includegraphics[width=0.3\textwidth]{fig/noised_image.jpg}}
+        \caption{Proof-of-concept demonstration of Laplace distributed random noise being used to obscure an individual's identity whilst preserving a detectable facial structure. A square has been drawn around the faces detected by the pre-trained Viola-Jones classifier bundled with OpenCV. The photo features, and was taken by the author.}
+        \label{fig:viola_jones}
+      \end{figure}
+
+      The Viola-Jones classifier works by applying rectangular filters to detect facial features. A Newton description could contain invariants to describe these filters in terms of pixel values; this information could, for example, be used by a noising system to ensure that random noise is applied in a way that does not significantly impact an image's response to the facial detection filters (i.e. if an image contains a face, then the Viola-Jones classifier described in Newton should still detect the face after the noising process, and vice versa if no face is present in the un-noised \textit{private} image).
 
     \subsubsection{Microphone}
       \textit{$\langle$ TODO $\rangle$}
@@ -196,6 +208,8 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
         \item Random rearrangement of pixels.
         \item A combination of multiple techniques.
       \end{itemize}
+
+      \textit{GIVEN HAAR-LIKE FEATURES USED BY VIOLA JONES, APPLY NOISE IN SUCH A WAY THAT THOSE CONSTRAINTS ARE NOT INVALIDATED}
 
   \subsection{Multi-Sensor Differential Privacy Loss} \label{multi_sensor_differential_privacy_loss_section}
 
@@ -280,7 +294,7 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
     \textit{$\langle$ TODO: describe good practices picked up over the course of this project$\rangle$}
 
   \subsection{Hardware Entropy Source}
-    One of the key components of a security/privacy application is a true random number generator (TRNG). Unlike a pseudorandom number generator (PRNG), which produces a predictable deterministic outcome, a true random number generator's output cannot be anticipated by an attacker, preserving system security and users' privacy. The output bit rate of TRNGs is often limited so can be used to seed a cryptographically secure PRNG (CSPRNG) algorithm to increase output bit rate without significantly compromising security. This extra step was not required for this project, since the rate at which random numbers are consumed is relatively low.\\
+    As discussed in section \ref{subsection:intro_rng}, one of the key components of a security/privacy application is a true random number generator (TRNG). Unlike a pseudorandom number generator (PRNG), which produces a predictable deterministic outcome, a true random number generator's output cannot be anticipated by an attacker, preserving system security and users' privacy. The output bit rate of TRNGs is often limited so can be used to seed a cryptographically secure PRNG (CSPRNG) algorithm to increase output bit rate without significantly compromising security. This extra step was not required for this project, since the rate at which random numbers are consumed is relatively low.\\
 
     Initial investigations focused on using the iCE40 FPGA's differential I/O hardware to generate random bits which could be fed into a TRNG to generate random samples from an arbitrary distribution. Initially, it was hoped that simply leaving two comparator inputs floating would cause the output to fluctuate randomly --- in practice this did not occur as the comparator hardware requires one of the inputs to be biased within a narrow common mode voltage range (roughly half the I/O supply voltage, allowing the other input to swing about this reference voltage)~\cite{ice40_diff_io}. I decided to design a PCB to set this bias voltage, as well as provide an alternative entropy source in the form of a reverse biased zener diode producing avalanche noise. In theory, this circuit would provide a better i.e. less predictable source of entropy since, unlike the floating input pin, the avalanche noise (and therefore random number output) produced is independent of the device's external environment\footnote{A floating input pin can easily be influenced by its external environment e.g. picking up 50Hz noise from nearby electrical mains, resulting in a non-uniform frequency spectrum for random output.}.\\
 
@@ -331,16 +345,18 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
     \textit{$\langle$ TODO: quantify randomness of output, with and without zener diode$\rangle$}
 
 
-  \subsection{Uniform Random Number Generator Characterisation}
-    \textit{$\langle$ TODO: evaluate e.g. number of LUTs etc.$\rangle$}
 
-  \subsection{Inversion Method Random Number Generator Characterisation}
-    \textit{$\langle$ TODO: evaluate e.g. number of LUTs etc.$\rangle$}
 
   \subsection{Scaling of Logic Implementations}
-    \textit{$\langle$ TODO: investigate how URNG and RNG logic implementations scale with various parameters (and how this compares to a naive implementation)$\rangle$}
+    \textit{$\langle$ TODO: evaluate e.g. number of LUTs etc.$\rangle$}\\
+    \textit{$\langle$ TODO: investigate how URNG and RNG logic implementations scale with various parameters (and how this compares to a naive implementation)$\rangle$}\\
 
     \textit{$\langle$ TODO: investigate scaling of adder hardware (inferred from Verilog vs iCE40 hardware accumulators)$\rangle$}
+    \subsubsection{Uniform Random Number Generator}
+
+
+    \subsubsection{Inversion Method Random Number Generator}
+
 
 \newpage
 
@@ -462,21 +478,6 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
       & = log \left( \frac{\int_{R_{\hat{X}}} Pr\{X = x_{obs}| \hat{X} = \hat{x}\} Pr\{\hat{X}=\hat{x}|\hat{Y} = \hat{y}_a\} d\hat{x} }{\int_{R_{\hat{X}}} Pr\{X = x_{obs}| \hat{X} = \hat{x}\} Pr\{\hat{X}=\hat{x}|\hat{Y} = \hat{y}_b\} d\hat{x} }\right) \label{eqn:priv_loss_y_hat_final},
     \end{align}
     for $\hat{y}_a, \hat{y}_b = \argmax_{\hat{y}_a, \hat{y}_b}(l_{\hat{Y}})$ as before.
-  %
-  % URNG BLOCK DIAGRAM
-  %
-
-  \section{Uniform Random Number Generator: Block Diagram}
-    \textit{$\langle$ TODO: insert block diagram$\rangle$}
-
-
-  %
-  % INVERSION METHOD BLOCK DIAGRAM
-  %
-
-  \section{Inversion Method Random Number Generator: Block Diagram}
-    \textit{$\langle$ TODO: insert block diagram$\rangle$}
-
 
   %
   % NOISE GENERATOR SCHEMATIC AND PCB LAYOUT
