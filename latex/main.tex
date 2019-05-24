@@ -339,147 +339,217 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
     \end{figure}
 
     \subsubsection{Method}
-    This section presents measurements taken at several test points in the assembled circuit, analysing the noise signal at each stage in the amplifier circuit. A schematic is available in Appendix \ref{appendix:schematic}, showing the locations of these test points within the circuit. The author measured and recorded voltage waveforms at each of the testpoints listed below using a Tektronix TDS 1001B oscilloscope with both AC and DC probe coupling --- DC coupling was used for the waveform screenshots shown below, as well as for measuring average voltage, whilst AC coupling was used for $V_{RMS}$ and peak-to-peak voltage $V_{pp}$ measurements. The author took measurements using a 1ms timebase, corresponding to a 250MS/s sample rate for this oscilloscope~\cite{tektronix}. A \textit{measurement} consisted of the simulataneous capture of a bitmap screenshot from the oscilloscope and a comma-separated value record of the waveform samples being displayed.
+    This section presents measurements taken at several test points in the assembled circuit, analysing the noise signal at each stage in the amplifier circuit. A schematic is available in Appendix \ref{appendix:schematic}, showing the locations of these test points within the circuit. The author measured and recorded voltage waveforms at each of the testpoints listed below using a Tektronix MDO4104C oscilloscope with both AC and DC probe coupling --- DC coupling was used for the waveform screenshots shown below, (as well as for taking the average voltage measurements shown in the screenshots), whilst AC coupling was used for $V_{RMS}$ measurements. When displaying the FFT of signals on the oscilloscope, the author used a rectangular window function since the noise spectrum was predicted to be fairly wide (white up to around 50MHz~\cite[p.~984]{art_of_electronics}).
 
-    The author used Matlab to generate discrete fourier transforms for the waveforms measured with DC probe coupling; this involved subtracting the measured mean voltage from all voltage samples before taking the fast fourier transform. No window function was applied since the noise spectrum was predicted to be fairly wide (white up to around 50MHz~\cite[p.~984]{art_of_electronics}).
-
-    The oscilloscope records 2500 waveform data points at a time, corresponding to a frequency resolution of 100kHz for a 250MS/s sample rate. The author also decided to measure the noise output (TP9) using a 5ms (50MS/s) timebase setting with 20MHz BW limit filter enabled, to provide a greater frequency resolution for the output noise spectrum over a smaller measurement bandwidth (0 to 20MHz vs 0 t0 50MHz previously).
-
+    \newpage
     \subsubsection{Results}
 
-      \newpage
+      % \newpage
       \paragraph{TP2: Avalanche breakdown noise source}
 
-        \begin{center}
-          \begin{tabular}{ c c c }
-             $V_{rms} = $ & , & $V_{pp} = $
-          \end{tabular}
-        \end{center}
+      % \begin{center}
+      %   \begin{tabular}{ c c c }
+      %      $V_{rms} = $ & , & $V_{av} = $
+      %   \end{tabular}
+      % \end{center}
+      %
+      % \begin{figure}[H]
+      %   \centering
+      %   \includegraphics[width=0.5\textwidth]{fig/tp2_yt.png}% TODO: fill in
+      %   \caption{Measured waveform with DC probe coupling. $V_{average} = $.}% TODO: fill in V_{average}
+      %   \label{fig:tp2_waveform}% TODO: update label with appropriate TP number
+      % \end{figure}
+      %
+      % \begin{figure}[H]
+      %   \centering
+      %   \includegraphics[width=0.6\textwidth]{fig/PCB_CROPPED.jpg}% TODO: fill in
+      %   \caption{FFT of waveform shown in Figure \ref{fig:tp2_waveform}.}% TODO: replace with appropriate reference.
+      %   \label{fig:tp2_fft}% TODO: update label with appropriate TP number
+      % \end{figure}
+
+        \begin{equation}
+          V_{RMS} = 8.79mV.\nonumber
+        \end{equation}
 
         \begin{figure}[H]
           \centering
-          \includegraphics[width=0.5\textwidth]{fig/PCB_CROPPED.jpg}% TODO: fill in
-          \caption{Measured waveform with DC probe coupling. $V_{average} = $.}% TODO: fill in V_{average}
-          \label{fig:tp2_waveform}% TODO: update label with appropriate TP number
+          \subfloat[Time domain]{\includegraphics[width=0.7\textwidth]{fig/tp2_yt.png}}
+          \qquad
+          \subfloat[Frequency domain]{\includegraphics[width=0.7\textwidth]{fig/tp2_f_wide.png}}
+          \label{fig:tp2_waveforms}
         \end{figure}
-
-        \begin{figure}[H]
-          \centering
-          \includegraphics[width=0.6\textwidth]{fig/PCB_CROPPED.jpg}% TODO: fill in
-          \caption{FFT of waveform shown in Figure \ref{fig:tp2_waveform}.}% TODO: replace with appropriate reference.
-          \label{fig:tp2_fft}% TODO: update label with appropriate TP number
-        \end{figure}
+        \setcounter{subfigure}{0}
 
 
       \newpage
       \paragraph{TP4: Input to first op-amp}
 
-        \begin{center}
-          \begin{tabular}{ c c c }
-             $V_{rms} = $ & , & $V_{pp} = $
-          \end{tabular}
-        \end{center}
+        \begin{equation}
+          V_{RMS} = 8.92mV.\nonumber
+        \end{equation}
 
         \begin{figure}[H]
           \centering
-          \includegraphics[width=0.5\textwidth]{fig/PCB_CROPPED.jpg}% TODO: fill in
-          \caption{Measured waveform with DC probe coupling. $V_{average} = $.}% TODO: fill in V_{average}
-          \label{fig:tp4_waveform}
+          \subfloat[Time domain]{\includegraphics[width=0.7\textwidth]{fig/tp4_yt.png}}
+          \qquad
+          \subfloat[Frequency domain]{\includegraphics[width=0.7\textwidth]{fig/tp4_f_wide.png}}
+          \label{fig:tp4_waveforms}
         \end{figure}
-
-        \begin{figure}[H]
-          \centering
-          \includegraphics[width=0.6\textwidth]{fig/PCB_CROPPED.jpg}% TODO: fill in
-          \caption{FFT of waveform shown in Figure \ref{fig:tp4_waveform}.}
-          \label{fig:tp4_fft}
-        \end{figure}
+        \setcounter{subfigure}{0}
 
       \newpage
       \paragraph{TP8: Output of first op-amp/input to second op-amp}
 
-        \begin{center}
-          \begin{tabular}{ c c c }
-             $V_{rms} = $ & , & $V_{pp} = $
-          \end{tabular}
-        \end{center}
+        \begin{equation}
+          V_{RMS} = 38.4mV.\nonumber
+        \end{equation}
 
         \begin{figure}[H]
           \centering
-          \includegraphics[width=0.5\textwidth]{fig/PCB_CROPPED.jpg}% TODO: fill in
-          \caption{Measured waveform with DC probe coupling. $V_{average} = $.}% TODO: fill in V_{average}
-          \label{fig:tp8_waveform}
+          \subfloat[Time domain]{\includegraphics[width=0.7\textwidth]{fig/tp8_yt.png}}
+          \qquad
+          \subfloat[Frequency domain]{\includegraphics[width=0.7\textwidth]{fig/tp8_f.png}}
+          \label{fig:tp8_waveforms}
         \end{figure}
-
-        \begin{figure}[H]
-          \centering
-          \includegraphics[width=0.6\textwidth]{fig/PCB_CROPPED.jpg}% TODO: fill in
-          \caption{FFT of waveform shown in Figure \ref{fig:tp8_waveform}.}
-          \label{fig:tp8_fft}
-        \end{figure}
+        \setcounter{subfigure}{0}
 
       \newpage
       \paragraph{TP9: Output of second op-amp}
 
-        \begin{center}
-          \begin{tabular}{ c c c }
-             $V_{rms} = $ & , & $V_{pp} = $
-          \end{tabular}
-        \end{center}
+        \begin{equation}
+          V_{RMS} = 363mV.\nonumber
+        \end{equation}
 
         \begin{figure}[H]
           \centering
-          \includegraphics[width=0.5\textwidth]{fig/PCB_CROPPED.jpg}% TODO: fill in
-          \caption{Measured waveform with DC probe coupling. $V_{average} = $.}% TODO: fill in V_{average}
-          \label{fig:tp9_waveform}
+          \subfloat[Time domain]{\includegraphics[width=0.7\textwidth]{fig/tp9_yt.png}}
+          \qquad
+          \subfloat[Frequency domain]{\includegraphics[width=0.7\textwidth]{fig/tp9_f.png}}
+          \label{fig:tp9_waveforms}
         \end{figure}
-
-        \begin{figure}[H]
-          \centering
-          \includegraphics[width=0.6\textwidth]{fig/PCB_CROPPED.jpg}% TODO: fill in
-          \caption{FFT of waveform shown in Figure \ref{fig:tp9_waveform}.}
-          \label{fig:tp9_fft}
-        \end{figure}
+        \setcounter{subfigure}{0}
 
       \newpage
       \paragraph{TP10: Circuit noise output}
 
-        \begin{center}
-          \begin{tabular}{ c c c }
-             $V_{rms} = $ & , & $V_{pp} = $
-          \end{tabular}
-        \end{center}
+        \begin{equation}
+          V_{RMS} = 343mV.\nonumber
+        \end{equation}
 
         \begin{figure}[H]
           \centering
-          \includegraphics[width=0.5\textwidth]{fig/PCB_CROPPED.jpg}% TODO: fill in
-          \caption{Measured waveform with DC probe coupling. $V_{average} = $.}% TODO: fill in V_{average}
-          \label{fig:tp10_waveform}
+          \subfloat[Time domain]{\includegraphics[width=0.7\textwidth]{fig/tp10_yt.png}}
+          \qquad
+          \subfloat[Frequency domain]{\includegraphics[width=0.7\textwidth]{fig/tp10_f.png}}
+          \label{fig:tp10_waveforms}
         \end{figure}
-
-        \begin{figure}[H]
-          \centering
-          \includegraphics[width=0.6\textwidth]{fig/PCB_CROPPED.jpg}% TODO: fill in
-          \caption{FFT of waveform shown in Figure \ref{fig:tp10_waveform}.}
-          \label{fig:tp10_fft}
-        \end{figure}
-
-        \begin{figure}[H]
-          \centering
-          \includegraphics[width=0.6\textwidth]{fig/PCB_CROPPED.jpg}% TODO: fill in
-          \caption{FFT of data sampled at 50MS/s with 20MHz BW limit filter applied.}
-          \label{fig:tp10_fft_lowfreq}
-        \end{figure}
+        \setcounter{subfigure}{0}
 
       \textit{$\langle$ TODO: quantify randomness of output, with and without avalanche source$\rangle$}
 
     \subsubsection{Discussion}
 
-      \textit{$\langle$ TODO: remove this?:$\rangle$}
-
-      One problem identified during testing was the tendency for the 12V boost regulator's inductor to get very hot during operation; whilst the circuit still functions in a room temperature environment, a further prototype iteration would use an inductor with a higher current rating to improve reliability. This might require a redesign of the PCB to accommodate a larger inductor package and footprint, although similarly sized alternatives are available\footnote{e.g. Coilcraft XAL4030-472MEC with a 5.1A RMS current rating, compared to the 1.2A for the Wurth Elektronik 744031004 currently being used. The datasheet for the ST8R00 step-up regulator states an absolute maximum inductor current of 3A~\cite{ST8R00}.}.
+      % One problem identified during testing was the tendency for the 12V boost regulator's inductor to get very hot during operation; whilst the circuit still functions in a room temperature environment, a further prototype iteration would use an inductor with a higher current rating to improve reliability. This might require a redesign of the PCB to accommodate a larger inductor package and footprint, although similarly sized alternatives are available\footnote{e.g. Coilcraft XAL4030-472MEC with a 5.1A RMS current rating, compared to the 1.2A for the Wurth Elektronik 744031004 currently being used. The datasheet for the ST8R00 step-up regulator states an absolute maximum inductor current of 3A~\cite{ST8R00}.}.
 
 
   \subsection{Scaling of Logic Implementations}
+    \subsubsection{Method}
+      This section presents the results of investigating the effect of random number generator bit width (the number of bits in the output) on the size and complexity of the resulting FPGA implementation. The author used Yosys, a program from the Project IceStorm~\cite{icestorm} toolchain, to synthesise Verilog RTL on a desktop computer\footnote{AMD Ryzen 5 2600X Six-Core Processor 3.60GHz, 16GB RAM.}. The terminal commands used are contained within the Makefiles in the URNG/RNG repositories, allowing these measurments to be repeated by running `make synthurng'/`make synthrng' within the appropriate repository (see Section \ref{subsection:GitHub} for a list of repositories). At the end of the synthesis process, yosys prints statistics for the resulting logic circuit  --- this information is displayed in Section \ref{subsubsection:scaling_results}.
+
+    \subsubsection{Results} \label{subsubsection:scaling_results}
+      The following tables are taken from Yosys' output. The table headings are described here~\cite{techlib}:
+      \begin{itemize}
+        \item Wires: The number of wires in the circuit where the multibit WIRE[X:0] counts as a single wire.
+        \item Bits: The number of wire bits in the circuit where the multibit WIRE[X:0] consists of X+1 wire bits.
+        \item CARRY: The number of logic cells used for their carry logic circuits (a combinational logic circuit useful for arithmetic operations).
+        \item DFFE: The number of logic cells used as D flip-flops with clock enable input.
+        \item DFFESR: The number of logic cells used as D flip-flops with clock enable and synchronous reset inputs.
+        \item LUT4: The number of logic cells used as ROM 4 input look-up tables.
+        \item U, S CPU Time: Time taken for synthesis to complete (user time, system time).
+        \item Mem: Total RAM used by Yosys to synthesise design.
+      \end{itemize}
+
+      \begin{table}
+        \centering
+        \begin{tabular}{|c||c|c|c|c|c|c|c|c|c|}
+          \hline
+          &
+          \multicolumn{2}{|c|}{No. of Wires}
+          &
+          \multicolumn{4}{|c|}{No. of Cells}
+          &
+          \multicolumn{2}{|c|}{Synthesis}\\
+          \hline
+          N & Wires & Bits & CARRY & DFFE & DFFESR & LUT4 & U, S CPU Time/s & Mem/MB\\
+          \hline
+          \hline
+          \textit{1} & \textit{29} & \textit{30} & \textit{0} & \textit{6} & \textit{4} & \textit{12} & \textit{0.27, 0.113} & \textit{28.93}\\
+          \hline
+          2 & 33 & 37 & 0 & 5 & 7 & 16 & 0.30, 0.05 & 29.00\\
+          \hline
+          \textit{3} & \textit{44} & \textit{58} & \textit{3} & \textit{6} & \textit{9} & \textit{25} & \textit{0.34, 0.08} & \textit{29.01}\\
+          \hline
+          4 & 41 & 56 & 1 & 7 & 10 & 24 & 0.34, 0.08 & 29.02\\
+          \hline
+          \textit{5} & \textit{49} & \textit{73} & \textit{5} & \textit{8} & \textit{12} & \textit{31} & \textit{0.33, 0.06} & \textit{29.04}\\
+          \hline
+          8 & 46 & 76 & 2 & 11 & 15 & 30 & 0.33, 0.17 & 35.29\\
+          \hline
+          16 & 60 & 117 & 3 & 19 & 24 & 45 & 0.52, 0.14 & 29.27\\
+          \hline
+          32 & 85 & 193 & 4 & 35 & 41 & 71 & 0.73, 0.19 & 29.55\\
+          \hline
+          64 & 119 & 326 & 5 & 67 & 74 & 106 & 1.14, 0.25 & 30.50\\
+          \hline
+        \end{tabular}
+        \caption{Effect of varying uniform RNG bit width, BX, on logic circuit size. Odd numbered bit widths are printed in italics.}
+        \label{table:urng_bx}
+      \end{table}
+
+      \begin{table}
+        \centering
+        \begin{tabular}{|c||c|c|c|c|c|c|c|c|c|}
+          \hline
+          &
+          \multicolumn{2}{|c|}{No. of Wires}
+          &
+          \multicolumn{4}{|c|}{No. of Cells}
+          &
+          \multicolumn{2}{|c|}{Synthesis}\\
+          \hline
+          N & Wires & Bits & CARRY & DFFE & DFFESR & LUT4 & U, S CPU Time/s & Mem/MB\\
+          \hline
+          \hline
+
+          \hline
+        \end{tabular}
+        \caption{Effect of varying nonuniform RNG bit width, BY, on logic circuit size (for constant URNG bit width BX). Odd numbered bit widths are printed in italics.}
+        \label{table:rng_by}
+      \end{table}
+
+      \begin{table}
+        \centering
+        \begin{tabular}{|c||c|c|c|c|c|c|c|c|c|}
+          \hline
+          &
+          \multicolumn{2}{|c|}{No. of Wires}
+          &
+          \multicolumn{4}{|c|}{No. of Cells}
+          &
+          \multicolumn{2}{|c|}{Synthesis}\\
+          \hline
+          N & Wires & Bits & CARRY & DFFE & DFFESR & LUT4 & U, S CPU Time/s & Mem/MB\\
+          \hline
+          \hline
+
+          \hline
+        \end{tabular}
+        \caption{Effect of varying URNG bit width, BX, on RNG logic circuit size (for constant RNG output bit width BY). Odd numbered bit widths are printed in italics.}
+        \label{table:rng_bx}
+      \end{table}
+    \subsubsection{Discussion}
+
+
     \textit{$\langle$ TODO: evaluate e.g. number of LUTs etc.$\rangle$}\\
     \textit{$\langle$ TODO: investigate how URNG and RNG logic implementations scale with various parameters (and how this compares to a naive implementation)$\rangle$}\\
 
@@ -499,6 +569,8 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
 %
 
 \section{Conclusions}
+
+  The work done over the course of this project is contained within many different GitHub repositories, which can make it difficult to see how various pieces of work fit together. For a relatively small project such as this, it may have been simpler to keep all work within a single repository, though this would make it more difficult to reuse and/or modify individual components in future research/projects.
 
   \subsection{Future Work}
     The most obvious path for future work is to continue with the implemenatation of the system outlined above, in order to reduce a working prototype. As a research project, the characterisation work described in Section \ref{characterisation_section} was prioritised over working towards a working prototype, for the purposes of inspiring future research.\\
