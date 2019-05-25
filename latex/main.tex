@@ -118,7 +118,7 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
     \end{equation}
     where the probability space in each case is over the coin flips of the mechanism K.''\\
 
-    Throughout this project, the chosen randomised function K is the Laplace mechanism i.e. the addition of zero mean Laplace distributed random noise to \textit{private} data such as a measurement from a sensor\footnote{the \textit{databases} in this scenario are simply single sensor measurements hence any two \textit{databases} will always differ by at most a single element.} to produce a \textit{noised output} that can be released to untrusted observers (the outside world). This technique provides privacy by ensuring that every possible measurement value (i.e. any value within the sensor measurement range) has a similar posterior probability of being the \textit{true private} value given the observed \textit{noised output}. An outside observer can use the \textit{noised output} to estimate the value of \textit{private} data with some uncertainty but should never be able to deduce it with complete certainty.\\
+    Throughout this project, the chosen randomised function K is the Laplace mechanism i.e. the addition of zero mean Laplace distributed random noise to \textit{private} data such as a measurement from a sensor\footnote{The \textit{databases} in this scenario are simply single sensor measurements hence any two \textit{databases} will always differ by at most a single element.} to produce a \textit{noised output} that can be released to untrusted observers (the outside world). This technique provides privacy by ensuring that every possible measurement value (i.e. any value within the sensor measurement range) has a similar posterior probability of being the \textit{true private} value given the observed \textit{noised output}. An outside observer can use the \textit{noised output} to estimate the value of \textit{private} data with some uncertainty but should never be able to deduce it with complete certainty.\\
 
     The Laplace distribution used by this method has parameter $\frac{\lambda}{\epsilon}$. $\lambda$ refers to the \textit{global sensitivity} of the database query function; in this scenario this is simply the maximum difference between possible sensor measurements i.e. a sensor's measurement range. $\epsilon$ is a privacy scaling parameter, where a smaller $\epsilon$ value results in greater privacy by applying noise with a greater variance, thereby reducing the amount of information each \textit{noised output} value reveals about the \textit{private} data. For a particular application, deciding on an $\epsilon$ value is a tradeoff between utility and privacy since, in the limiting case, an $\epsilon$ value of zero means that the system outputs no useful information (just random noise), consequently keeping the \textit{private} data completely private.\\
 
@@ -156,7 +156,7 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
 
     \begin{figure}[H]
       \centering
-      \includegraphics[width=\textwidth]{fig/resonating_board.png}
+      \includegraphics[width=0.8\textwidth]{fig/resonating_board.png}
       \caption{The system modelled by Equation \ref{eqn:board_resonance}. Figure sourced from a poster produced in parallel to this project~\cite{eurosys_poster}.}
       \label{fig:resonating_board}
     \end{figure}
@@ -166,7 +166,7 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
     Within the context of this project, Newton provides the ability to describe the relationships between the sensors in a multi-sensor embedded system. This information is necessary to be able to quantify privacy losses in a multi-sensor system.
 
   \subsection{Random Number Generation} \label{subsection:intro_rng}
-    One important component of a local differential privacy system is a true random number generator (TRNG) to generate the random noise used to obscure \textit{private} data\footnote{In a security related application, pseudorandom number generators such as linear feedback shift registers are unsuitable since an attacker would be able to predict their output}. The Laplace mechanism requires random noise to be Laplace distributed, introducing additional complexity compared to uniform or Gaussian distributed RNGs. The resource constraints imposed by the iCE40 FPGA dictated the need to implement a hardware efficient RNG to generate this Laplace distributed noise. A research article by De Schryver et al.~\cite{DeSchryver} outlines a possible architecture for such a system, based on a lookup table indexed by a floating point representation of the output of a uniform random number generator. This architecture was implemented in Verilog and analysed as part of this project.
+    One important component of a local differential privacy system is a true random number generator (TRNG) to generate the random noise used to obscure \textit{private} data\footnote{In a security related application, pseudorandom number generators such as linear feedback shift registers are unsuitable since an attacker would be able to predict their output}. The Laplace mechanism requires random noise to be Laplace distributed, introducing additional complexity compared to uniform or Gaussian distributed RNGs. The resource constraints imposed by the iCE40 FPGA dictated the need to implement a hardware efficient RNG to generate this Laplace distributed noise. A research article by De Schryver et al.~\cite{DeSchryver} outlines a possible architecture for such a system, based on a lookup table indexed by a floating point representation of the output of a uniform random number generator. This architecture was implemented in Verilog and analysed as part of this project (see Section \ref{subsection:rng_impl}).
 
 
 \newpage
@@ -180,7 +180,7 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
 \section{Theoretical Development}
   The early stages of the project involved brainstorming and investigating potential research problems that would involve compiling Newton descriptions into a hardware description language. It soon became apparent that the Newton language was well suited to describing the relationships between sensors in a multi-sensor embedded system, thereby providing a basis to build upon the single-sensor state-of-the-art~\cite{Choi2018GuaranteeingLD}~\cite{diffpriv_2006}.
   \subsection{Brainstorming Example Applications}
-    Below are some example applications of an iCE40 based differential privacy system that eventually led to the project's focus on multi-sensor systems.
+    Below are some examples of security/privacy related applications of compiling a Newton description into Verilog that eventually led to the project's focus on differential privacy for multi-sensor systems.
     \subsubsection{Digital Camera/Viola-Jones Facial Detection}
       iCE40 FPGAs are able to drive digital cameras and perform facial recognition, as illustrated by the iCE40 Ultraplus Mobile Development Platform~\cite{iCE40_MDP}. In this context a differential privacy system might aim to apply random noise to an image in such a way that the identity of an individual can be obscured whilst still preserving enough information for facial detection algorithms to function correctly.  A Python script available in this report's GitHub repository\footnote{See Section \ref{subsection:GitHub}.} demonstrates this idea using OpenCV~\cite{opencv-contrib-python} --- the script converts a photo of a face to greyscale and subsamples to 32x32 size (effectively low pass filtering to remove high spatial frequencies) before Laplace distributed random noise ($\lambda$ = 25, mean = 0) is added to the pixel intensity values, similarly to the Laplace method described in Section \ref{intro_diff_priv}. The script then uses a Viola-Jones~\cite{Viola01rapidobject} classifier to detect faces in the images before and after the application of noise, demonstrating that a face can be detected in both cases provided the variance of the noise distribution is not too great to drown out all relevant information (analogous to the $\epsilon$ value in Section \ref{intro_diff_priv} being too small). The results of running this script can be observed in Figure \ref{fig:viola_jones}; the addition of random noise somewhat obscures the identity of the subject in the photo whilst still allowing a Viola-Jones facial detection to function. The demonstration featured here is a simple proof-of-concept; random distortion could be applied to the image in many different ways e.g. random displacement of pixels.
 
@@ -196,10 +196,9 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
       The Viola-Jones classifier works by applying rectangular filters to detect facial features. A Newton description could contain invariants to describe these filters in terms of pixel values; this information could, for example, be used by a noising system to ensure that random noise is applied in a way that does not significantly impact an image's response to the facial detection filters (i.e. if an image contains a face, then the Viola-Jones classifier described in Newton should still detect the face after the noising process, and vice versa if no face is present in the un-noised \textit{private} image).
 
     \subsubsection{Microphone}
-      \textit{$\langle$ TODO $\rangle$}
+      In a similar manner to the camera example above, noise could be added to audio data in such a way that a person's voice can be masked whilst still preserving features, such as mel-frequency cepstral coefficients, that allow speech recognition algorithms to function. The Newton language would be used to describe invariants in the time and/or frequency domains that must be held during the noising process.
 
     \subsubsection{\textit{Intelligent} Noising}
-      \textit{$\langle$ TODO: allowing the compiler to choose how to add noise, rather than explicity stating where to add noise$\rangle$}
       This project investigates a system which allows a user to specify which measurement signals they wish to add random noise to. It is possible to generalise this idea to a hypothetical system which has control over how it applies random noise to measurement data in order to mask a more abstract form of information. One concrete example of this would be when working with images (e.g. the  Viola-Jones example above) --- given the requirement that individuals' identities should be obscured whilst still providing enough information for facial detection algorithms to work reliably, a system might choose to apply noise using, for example:
 
       \begin{itemize}
@@ -209,13 +208,13 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
         \item A combination of multiple techniques.
       \end{itemize}
 
-      \textit{GIVEN HAAR-LIKE FEATURES USED BY VIOLA JONES, APPLY NOISE IN SUCH A WAY THAT THOSE CONSTRAINTS ARE NOT INVALIDATED}
+      For such a system, a Newton description could be used to define constraints on the noised image's response to the Haar-like features used by a particular Viola-Jones facial detection algorithm; the system would then randomise the image in such a way that the constraints are not violated i.e. both the unnoised and noised images exhibit similar features, producing similar results when the face detection algorithm is applied.
 
   \subsection{Multi-Sensor Differential Privacy Loss} \label{multi_sensor_differential_privacy_loss_section}
 
-\section{System Design and Architecture}
+\section{System Design and Implementation}
   \subsection{Privacy Budget Management System Architecture}
-    The following section proposes a privacy management system architecture that could be used to manage multi-sensor privacy on an FPGA. Due to project time constraints, the system has not been completely implemented, since this would divert time and attention away from investigating the more important research questions posed by the project.
+    The following section proposes a privacy management system architecture that could be used to manage multi-sensor privacy on an FPGA. Due to project time constraints, the system has not been completely implemented, since this would divert time and attention away from investigating the more important research questions posed by the project. The progress made so far by the author is documented in sections \ref{section:tech} and \ref{section:characterisation}.
     \\
     \textit{$\langle$ TODO: describe what will have been implemented by the submission date e.g. use privacy yaml file and Newton AST to generate some of the logic implementation by filling in a Verilog template$\rangle$}
     \\
@@ -243,8 +242,8 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
 
     \end{itemize}
 
-    \subsection{Hardware}
-      As discussed previously, this system is based on the iCE40 FPGA, selected for its small size and low power consumption. These qualities make it ideal for inserting into an embedded device without significantly impacting the size or power consumption/battery life. Using FPGA hardware rather than a software implementation running on a processor has several advantages:
+    \subsection{FPGA}
+      This system is based on the iCE40 UP5K FPGA~\cite{iCE40}, selected for its small size and low power consumption. These qualities make it ideal for inserting into an embedded device without significantly impacting the size or power consumption/battery life. Using FPGA hardware rather than a software implementation running on a processor has several advantages:
 
       \begin{itemize}
         \item Increased speed, to the point where data rate is limited by the SPI/I2C bus clock rather than the privacy system.
@@ -253,25 +252,54 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
         \item Security - a hardware implementation is difficult for an attacker to manipulate or modify.
       \end{itemize}
 
-    \subsection{Uniform Random Number Generator}
+    \subsection{Hardware Entropy Source} \label{subsection:hardware_entropy_source}
+      As discussed in section \ref{subsection:intro_rng}, one of the key components of a security/privacy application is a true random number generator (TRNG). Unlike a pseudorandom number generator (PRNG), which produces a predictable deterministic outcome, a true random number generator's output cannot be anticipated by an attacker, preserving system security and users' privacy. The output bit rate of TRNGs is often limited so can be used to seed a cryptographically secure PRNG (CSPRNG) algorithm to increase output bit rate without significantly compromising security. This extra step was not required for this project, since the rate at which random numbers are consumed is relatively low.\\
+
+      Initial investigations focused on using the iCE40 FPGA's differential I/O hardware to generate random bits which could be fed into a TRNG to generate random samples from an arbitrary distribution. Initially, it was hoped that simply leaving two comparator inputs floating would cause the output to fluctuate randomly --- in practice this did not occur as the comparator hardware requires one of the inputs to be biased within a narrow common mode voltage range (roughly half the I/O supply voltage, allowing the other input to swing about this reference voltage)~\cite{ice40_diff_io}. The author decided to design a PCB to set this bias voltage, as well as provide an alternative entropy source in the form of a reverse biased avalanche diode producing avalanche noise. In theory, this circuit would provide a better i.e. less predictable source of entropy since, unlike the floating input pin, the avalanche noise (and therefore random number output) produced is independent of the device's external environment\footnote{A floating input pin can easily be influenced by its external environment e.g. picking up 50Hz noise from nearby electrical mains, resulting in a non-uniform frequency spectrum for random output.}.\\
+
+      The circuit used in this noise generator is based on a design by Professor Paul Horowitz~\cite[p.~984]{art_of_electronics}, modified to operate at 3.3V and 0V power rails (rather than $\pm5V$). Avalanche noise produced by a reverse biased base-emitter junction of a 2N4401 transistor is amplified through a dual op-amp amplifier stage before being modulated about a 1.65V DC bias $\left(\frac{V_{cc}}{2}\right)$; this output can then be fed into one of the iCE40's comparator inputs. A second output on the PCB comes from a simple potentiometer circuit to set the common mode reference voltage on the second comparator input (with series resistors to allow for fine control about $\frac{V_{cc}}{2}$). Since the comparator output depends on whether the instantaneous voltage of the noise waveform lies above or below this reference voltage, this reference point can be adjusted to set the ratio of ones to zeros in the random comparator output.\\
+
+      The Art of Electronics~\cite[p.~984]{art_of_electronics} describes the noise produced by the circuit as being spectrally white up to around 50MHz, with a 100mVrms output signal.
+
       \begin{figure}[H]
         \centering
-        \includegraphics[width=\textwidth]{fig/urng.pdf}
-        \caption{Block diagram of URNG logic circuit.}
-        \label{fig:urng_block_diagram}
+        \subfloat[Front]{\includegraphics[width=0.4\textwidth]{fig/pcb_render_f.png}}
+        \subfloat[Back]{\includegraphics[width=0.4\textwidth]{fig/pcb_render_b.png}}
+        \caption{3D renders of PCB (in KiCad).}
+        \label{fig:pcb_render}
       \end{figure}
 
-      \textit{$\langle$ TODO: discuss block diagram$\rangle$}
+      The full circuit schematic and PCB layout can be found in Appendix \ref{appendix:schematic}, as well as the GitHub repository listed in Section \ref{subsection:GitHub}.
 
-    \subsection{Inversion Method Random Number Generator}
-      \begin{figure}[H]
-        \centering
-        \includegraphics[width=\textwidth]{fig/rng.pdf}
-        \caption{Block diagram of RNG logic circuit.}
-        \label{fig:rng_block_diagram}
-      \end{figure}
+      \subsection{Uniform Random Number Generator} \label{subsection:urng_impl}
+        \begin{figure}[H]
+          \centering
+          \includegraphics[width=\textwidth]{fig/urng.pdf}
+          \caption{Block diagram of URNG logic circuit.}
+          \label{fig:urng_block_diagram}
+        \end{figure}
 
-      \textit{$\langle$ TODO: discuss block diagram$\rangle$}
+        Figure \ref{fig:urng_block_diagram} shows the logic circuit for the uniform random number generator described in Verilog as part of this project (see Section \ref{subsection:GitHub} for the GitHub repository containing the code). Random bits are supplied to this logic circuit, such as those produced by the hardware entropy source described in Section \ref{subsection:hardware_entropy_source}. These are fed into a von Neumann debiasing module that uses a simple algorithm, invented by John von Neumann, to remove bias from the input bits, so that the probability of reciving a 1 bit from the debiasing module's output is equal to the probability of receiving a 0. This is achieved by taking two input bits at a time --- if both bits are equal (received sequence 0,0 or 1,1), they are discarded; if the received sequence is 1,0 then the output bit is 1; if the received sequence is 0,1 then the output bit is zero. The module's behaviour can be described more formally: for random input bits modelled by random variable $X$ with a distribution $p()$ such that $p(X = 1) \neq p(X = 0)$ but $p(X_i = 1, X_{i+1} = 0) = p(X_i = 0,X_{i+1} = 1)$, the debiasing module outputs random bits modelled by random variable $Y$ with distribution $q()$ where $q(Y=0) = q(Y=1)$.\\
+
+        The additional logic in this URNG module is used to store $n$ bits output by the extractor in an $n$ bit output register (providing a fixed point $n$ bit uniform random number). Each bit in the register is associated with a valid signal (stored in the \textit{valid} output register) that goes high once the associated output bit takes on a value from the extractor output.\\
+
+        The circuit runs until the output register is filled, at which point the internal enable (\textit{en}) register is set from 1 to 0; to generate a new random number the module must be reset.\\
+
+        The GitHub repository for the URNG contains a Verilog testbench that can be run with the command `make simurng' to successfully simulate and test this logic circuit. The circuit has also been successfully synthesised for an iCE40 UP5K FPGA; a detailed analysis is presented in Section \ref{subsection:scaling}.
+
+      \subsection{Inversion Method Random Number Generator} \label{subsection:rng_impl}
+        \begin{figure}[H]
+          \centering
+          \includegraphics[width=\textwidth]{fig/rng.pdf}
+          \caption{Block diagram of RNG logic circuit.}
+          \label{fig:rng_block_diagram}
+        \end{figure}
+
+        This module contains the URNG described in Section \ref{subsection:urng_impl}, transforming uniformly distributed random numbers into random numbers distributed according to an arbitary (e.g. Laplace) distribution. This is achieved by implementing the hardware efficient system described by De Schryver et al.~\cite{DeSchryver}.\\
+
+        The module \textit{rng\_uniform\_to\_float} takes the uniform random numbers produced by the URNG and transforms them into a floating point representation using the algorithm described by De Schryver et al.~\cite{DeSchryver}. The production of a single floating point number may require more than one uniform random number to be consumed, so this module is capable of resetting the URNG to generate as many uniform random numbers as it needs to produce a floating point output number. This module requires an internal block of combinational logic to count the number of leading zeros within a particular region of the bit vector coming from the URNG; the author implemented this logic module using a hardware-efficient recursively\footnote{The finite recursion depth when instantiating this module means that the resulting logic circuit is still synthesisable i.e. can be realised as a physical circuit on an FPGA.} instantiated tree structure proposed by Oklobdzija~\cite{clz}.\\
+
+        The floating point number produced by the \textit{rng\_uniform\_to\_float} module is used as the input address to a block RAM lookup table, allowing two coeffients (c0 and c1) to be read out of the RAM. The contents of this RAM is generated by a C program written by the author (described in Section \ref{subsection:build_system}) which obtains c0 and c1 coefficients by taking discrete samples of a continuous probability distribution such as the Laplace distribution. The final output number is calculated at $c0 + c1 \times m$ where $m$ consists of a certain number\footnote{Details of this random number generator architecture can be found in the paper~\cite{DeSchryver} on which this implementation is based; they are not repeated in this report.} of the least significant bits from the mantissa part of the floating point number produced by \textit{rng\_uniform\_to\_float}. This final random number output is accompanied by a valid flag signal; this signal must be delayed using the \textit{valid\_pipe} register to synchronise it with the associated random number at the output. As with the URNG, the logic circuit runs until a valid random number appears at the output; it must then be reset to produce a new random number.
 
 \newpage
 
@@ -281,19 +309,25 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
 % TECHNOLOGIES AND TECHNIQUES USED
 %
 
-\section{Implementation: Technologies and Techniques Used}
+\section{Technologies and Techniques Used} \label{section:tech}
   \subsection{GitHub} \label{subsection:GitHub}
     Below is a list of GitHub repositories containing work done as part of this project:
     \begin{itemize}
-        \item Main project repository containing Python simulations/tests, Verilog templates and C code to fill in templates:\\
+        \item Main project repository containing Python simulations/tests, Verilog templates and C code:\\
         \url{https://github.com/Gregox273/Newton-Verilog-Compiler}
         \item Verilog repository for iCE40 differential I/O based uniform random number generator:\\
         \url{https://github.com/physical-computation/iCE40-LVDS-RNG}
         \item Schematic and PCB design for hardware random noise generator:\\
         \url{https://github.com/Gregox273/hardware-rng}
+        \item Physical Computation Laboratory measurement repository, containing measurements taken when characterising the hardware random number generator (Sections \ref{subsection:eval_hardware_entropy} and \ref{subsection:eval_randomness}):\\
+        \url{https://github.com/physical-computation/measurement-data}\\
+        Measurement Number: 33
+        Branch: issue-33
 
     \end{itemize}
-    \textit{$\langle$ TODO: describe how GitHub was used$\rangle$}
+
+    
+
     \textit{$\langle$ TODO: include an example of commit history for a repository$\rangle$}
 
   \subsection{iCE40 FPGA}
@@ -302,37 +336,11 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
 
   \subsection{FPGA Synthesis Toolchain}
 
-  \subsection{Repository Structure and Build System}
+  \subsection{Main Project Repository Structure and Build System} \label{subsection:build_system}
+    \textit{TODO: talk about C program, parameterised verilog}
 
   \subsection{Verilog Development Techniques}
     \textit{$\langle$ TODO: describe good practices picked up over the course of this project$\rangle$}
-
-  \subsection{Hardware Entropy Source}
-    As discussed in section \ref{subsection:intro_rng}, one of the key components of a security/privacy application is a true random number generator (TRNG). Unlike a pseudorandom number generator (PRNG), which produces a predictable deterministic outcome, a true random number generator's output cannot be anticipated by an attacker, preserving system security and users' privacy. The output bit rate of TRNGs is often limited so can be used to seed a cryptographically secure PRNG (CSPRNG) algorithm to increase output bit rate without significantly compromising security. This extra step was not required for this project, since the rate at which random numbers are consumed is relatively low.\\
-
-    Initial investigations focused on using the iCE40 FPGA's differential I/O hardware to generate random bits which could be fed into a TRNG to generate random samples from an arbitrary distribution. Initially, it was hoped that simply leaving two comparator inputs floating would cause the output to fluctuate randomly --- in practice this did not occur as the comparator hardware requires one of the inputs to be biased within a narrow common mode voltage range (roughly half the I/O supply voltage, allowing the other input to swing about this reference voltage)~\cite{ice40_diff_io}. The author decided to design a PCB to set this bias voltage, as well as provide an alternative entropy source in the form of a reverse biased avalanche diode producing avalanche noise. In theory, this circuit would provide a better i.e. less predictable source of entropy since, unlike the floating input pin, the avalanche noise (and therefore random number output) produced is independent of the device's external environment\footnote{A floating input pin can easily be influenced by its external environment e.g. picking up 50Hz noise from nearby electrical mains, resulting in a non-uniform frequency spectrum for random output.}.\\
-
-    The circuit used in this noise generator is based on a design by Professor Paul Horowitz~\cite[p.~984]{art_of_electronics}, modified to operate at 3.3V and 0V power rails (rather than $\pm5V$). Avalanche noise produced by a reverse biased base-emitter junction of a 2N4401 transistor is amplified through a dual op-amp amplifier stage before being modulated about a 1.65V DC bias $\left(\frac{V_{cc}}{2}\right)$; this output can then be fed into one of the iCE40's comparator inputs. A second output on the PCB comes from a simple potentiometer circuit to set the common mode reference voltage on the second comparator input (with series resistors to allow for fine control about $\frac{V_{cc}}{2}$). Since the comparator output depends on whether the instantaneous voltage of the noise waveform lies above or below this reference voltage, this reference point can be adjusted to set the ratio of ones to zeros in the random comparator output.\\
-
-    The Art of Electronics~\cite[p.~984]{art_of_electronics} describes the noise produced by the circuit as being spectrally white up to around 50MHz, with a 100mVrms output signal.
-
-    \begin{figure}[H]
-      \centering
-      \subfloat[Front]{\includegraphics[width=0.4\textwidth]{fig/pcb_render_f.png}}
-      \subfloat[Back]{\includegraphics[width=0.4\textwidth]{fig/pcb_render_b.png}}
-      \caption{3D renders of PCB (in KiCad).}
-      \label{fig:pcb_render}
-    \end{figure}
-
-    \textit{$\langle$ TODO: finish$\rangle$}
-    \\
-    The full circuit schematic and PCB layout can be found in Appendix \ref{appendix:schematic}, as well as the GitHub repository listed in Section \ref{subsection:GitHub}.
-
-    \subsection{Uniform Random Number Generator Implementation}
-    \textit{$\langle$ TODO: insert block diagram$\rangle$}
-
-    \subsection{Inversion Method Random Number Generator Implementation}
-      \textit{$\langle$ TODO: insert block diagram$\rangle$}
 
 \newpage
 
@@ -342,9 +350,9 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
 % DELIVERABLES
 %
 
-\section{Evaluation and Characterisation} \label{characterisation_section}
+\section{Evaluation and Characterisation} \label{section:characterisation}
 
-  \subsection{Evaluation of Hardware Entropy Source}
+  \subsection{Evaluation of Hardware Entropy Source} \label{subsection:eval_hardware_entropy}
     \begin{figure}[H]
       \centering
       \includegraphics[width=0.5\textwidth]{fig/PCB_CROPPED.jpg}
@@ -463,7 +471,7 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
 
       % One problem identified during testing was the tendency for the 12V boost regulator's inductor to get very hot during operation; whilst the circuit still functions in a room temperature environment, a further prototype iteration would use an inductor with a higher current rating to improve reliability. This might require a redesign of the PCB to accommodate a larger inductor package and footprint, although similarly sized alternatives are available\footnote{e.g. Coilcraft XAL4030-472MEC with a 5.1A RMS current rating, compared to the 1.2A for the Wurth Elektronik 744031004 currently being used. The datasheet for the ST8R00 step-up regulator states an absolute maximum inductor current of 3A~\cite{ST8R00}.}.
 
-  \subsection{Randomness Testing}
+  \subsection{Randomness Testing} \label{subsection:eval_randomness}
     The author used an improved version of the NIST Statistical Test Suite, developed by Cisco~\cite{arcetri_sts}, to assess the randomness of the bits produced when the hardware entropy source was connected to a comparator input on an iCE40 FPGA (on a Warp-FPGA board~\cite{stanley2018hardware}). The comparator output was sampled using a Digilent Analog Discovery 2, allowing 2 million random bits to be recorded (at 10kilobits per second, clocked by the iCE40's low frequency oscillator) for analysis.\\
 
     When running the test suite~\cite{nist_test_suite}, the input data is split into $i$ \textit{iterations} of length $S$ bits, where a greater $i$ value leads to a more accurate result\footnote{The accompanying NIST report~\cite{nist_test_suite} suggests at least 55 iterations.}, but also a smaller $S$ value for a given amount of sample data (which can prevent some tests from running; a recommended~\cite{arcetri_sts} $S$ value is $2^{20}$). Each test run as part of the suite consists of two \textit{analyses}; a test is said to have passed if:
@@ -526,10 +534,10 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
 
         A detailed analysis of these results, and the mathematics behind the test suite, is beyond the scope of this report; the fact that the majority of tests appear to have passed suggests that the hardware entropy source is likely to be sufficient for the requirements of this project. Additionally, as $i$ (and hence test accuracy) increased, the proportion of tests passed increased.\\
 
-        One area for further investigation would be to gather a larger sample of random bits ($\gtrsim 60$ Megabits), both with and without the hardware entropy source attached to the FPGA. This would allow for comparison of test results, whilst a larger sample size would allow the entire test suite to  be run with a sufficient number of iterations. The speed at which the above data could be acquired was significantly limited by the low clock frequency used to clock the random bit generator --- the iCE40's 48MHz high frequency oscillator could be used instead to overcome this limitation, though it is likely that a compromise would have to be made (e.g. dividing clock frequency down to a few MHz or less) to minimise cross talk in PCB traces and flying wires leading to a logic analyser.
+        One area for further investigation would be to gather a larger sample of random bits ($\gtrsim 60$ Megabits\footnote{The Analog Discovery 2 can only record 10 million samples at a time, so such a measurement would require several samples to be taken and concatenated later for testing.}), both with and without the hardware entropy source attached to the FPGA. This would allow for comparison of test results, whilst a larger sample size would allow the entire test suite to  be run with a sufficient number of iterations. The speed at which the above data could be acquired was significantly limited by the low clock frequency used to clock the random bit generator --- the iCE40's 48MHz high frequency oscillator could be used instead to overcome this limitation, though it is likely that this frequency would have to be divided down to a few MHz or less to minimise edge distortion due to low bandwidth in PCB traces and flying wires leading to a logic analyser, as well as to reduce cross talk between wires.
 
 
-  \subsection{Scaling of Logic Implementations}
+  \subsection{Scaling of Logic Implementations} \label{subsection:scaling}
     \subsubsection{Method}
       This section presents the results of investigating the effect of random number generator bit width (the number of bits in the output) on the size and complexity of the resulting FPGA implementation. The author used Yosys, a program from the Project IceStorm~\cite{icestorm} toolchain, to synthesise Verilog RTL on a desktop computer\footnote{AMD Ryzen 5 2600X Six-Core Processor 3.60GHz, 16GB RAM.}. The terminal commands used are contained within the Makefiles in the URNG/RNG repositories, allowing these measurments to be repeated by running `make synthurng'/`make synthrng' within the appropriate repository (see Section \ref{subsection:GitHub} for a list of repositories). At the end of the synthesis process, yosys prints statistics for the resulting logic circuit  --- this information is displayed in Section \ref{subsubsection:scaling_results}.
 
@@ -644,7 +652,7 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
   The work done over the course of this project is contained within many different GitHub repositories, which can make it difficult to see how various pieces of work fit together. For a relatively small project such as this, it may have been simpler to keep all work within a single repository, though this would make it more difficult to reuse and/or modify individual components in future research/projects.
 
   \subsection{Future Work}
-    The most obvious path for future work is to continue with the implemenatation of the system outlined above, in order to reduce a working prototype. As a research project, the characterisation work described in Section \ref{characterisation_section} was prioritised over working towards a working prototype, for the purposes of inspiring future research.\\
+    The most obvious path for future work is to continue with the implemenatation of the system outlined above, in order to reduce a working prototype. As a research project, the characterisation work described in Section \ref{section:characterisation} was prioritised over working towards a working prototype, for the purposes of inspiring future research.\\
 
     One potential area for future research is the application of the Newton language to safeguarding against \textit{transduction attacks} (attacks on a computer system performed by manipulating transducers i.e. sensors in the system). This idea was briefly investigated by the author in parallel to this project, resulting in the publication of a poster~\cite{eurosys_poster} presented by the author at EuroSys 2019 in Dresden. The overall idea behind the poster was that Newton could be used to describe plausible system behaviour (e.g. constraints imposed by physical laws governing the system), thereby allowing implausible behaviour to be recognised and interpreted as a possible transduction attack in progress. The poster is summarised in Appendix \ref{poster_appendix}.\\
 
