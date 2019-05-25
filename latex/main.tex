@@ -445,11 +445,74 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
         \end{figure}
         \setcounter{subfigure}{0}
 
-      \textit{$\langle$ TODO: quantify randomness of output, with and without avalanche source$\rangle$}
-
     \subsubsection{Discussion}
 
       % One problem identified during testing was the tendency for the 12V boost regulator's inductor to get very hot during operation; whilst the circuit still functions in a room temperature environment, a further prototype iteration would use an inductor with a higher current rating to improve reliability. This might require a redesign of the PCB to accommodate a larger inductor package and footprint, although similarly sized alternatives are available\footnote{e.g. Coilcraft XAL4030-472MEC with a 5.1A RMS current rating, compared to the 1.2A for the Wurth Elektronik 744031004 currently being used. The datasheet for the ST8R00 step-up regulator states an absolute maximum inductor current of 3A~\cite{ST8R00}.}.
+
+  \subsection{Randomness Testing}
+    The author used an improved version of the NIST Statistical Test Suite, developed by Cisco~\cite{arcetri_sts}, to assess the randomness of the bits produced when the hardware entropy source was connected to a comparator input on an iCE40 FPGA (on a Warp-FPGA board~\cite{stanley2018hardware}). The comparator output was sampled using a Digilent Analog Discovery 2, allowing 2 million random bits to be recorded (at 10kilobits per second, clocked by the iCE40's low frequency oscillator) for analysis.\\
+
+    When running the test suite~\cite{nist_test_suite}, the input data is split into $i$ \textit{iterations} of length $S$ bits, where a greater $i$ value leads to a more accurate result\footnote{The accompanying NIST report~\cite{nist_test_suite} suggests at least 55 iterations.}, but also a smaller $S$ value for a given amount of sample data (which can prevent some tests from running; a recommended~\cite{arcetri_sts} $S$ value is $2^{20}$). Each test run as part of the suite consists of two \textit{analyses}; a test is said to have passed if:
+    \begin{itemize}
+      \item Proportion analysis: the proportion of the $i$ iterations which pass the test falls within a certain confidence interval.
+      \item Uniformity analysis: the distribution of test P-values for each of the $i$ iterations is sufficiently uniformly distributed.
+    \end{itemize}
+
+    Different $i$, $S$ combinations were used to obtain the following results:
+
+    \subsubsection{$i$ = 80, $S$ = 25000}
+      The following tests were not run due to $S$ being too small: Rank, Overlapping Template, Universal, Approximate Entropy, Random Excursions, Random Excursions Variant, Serial, Linear Complexity.\\
+
+      150/155 tests passed both analyses:
+      \begin{table}[H]
+        \centering
+        \begin{tabular}{|c||c|c|}
+          \hline
+          Test Failed & Proportion & Uniformity\\
+          \hline
+          \hline
+          Runs & X & \\
+          \hline
+          3/148 of Non-overlapping Template Matching & X & \\
+          \hline
+          1/148 of Non-overlapping Template Matching & X & X\\
+          \hline
+        \end{tabular}
+        \caption{Tests failed when using a valid number of iterations. Failures are denoted by an X. }
+        \label{table:nist_80}
+      \end{table}
+
+      \subsubsection{$i$ = 2, $S$ = 1000000}
+        155/188 tests passed both analyses:
+        \begin{table}[H]
+          \centering
+          \begin{tabular}{|c||c|c|}
+            \hline
+            Test Failed & Frequency & Proportion\\
+            \hline
+            \hline
+            Frequency & X & \\
+            \hline
+            Cumulative Sums (forward) & X & \\
+            \hline
+            Cumulative Sums (backward) & X & \\
+            \hline
+            Runs & X & X\\
+            \hline
+            3/148 of Non-overlapping Template Matching & X & \\
+            \hline
+            8/8 of Random Excursions & X & X\\
+            \hline
+            18/18 of Random Excursions Variant & X & X\\
+            \hline
+          \end{tabular}
+          \caption{Tests failed when using enough bits per iteration to run the entire test suite. Failures are denoted by an X.}
+          \label{table:nist_2}
+        \end{table}
+
+        A detailed analysis of these results, and the mathematics behind the test suite, is beyond the scope of this report; the fact that the majority of tests appear to have passed suggests that the hardware entropy source is likely to be sufficient for the requirements of this project. Additionally, as $i$ (and hence test accuracy) increased, the proportion of tests passed increased.\\
+
+        One area for further investigation would be to gather a larger sample of random bits ($\gtrsim 60$ Megabits), both with and without the hardware entropy source attached to the FPGA. This would allow for comparison of test results, whilst a larger sample size would allow the entire test suite to  be run with a sufficient number of iterations. The speed at which the above data could be acquired was significantly limited by the low clock frequency used to clock the random bit generator --- the iCE40's 48MHz high frequency oscillator could be used instead to overcome this limitation, though it is likely that a compromise would have to be made (e.g. dividing clock frequency down to a few MHz or less) to minimise cross talk in PCB traces and flying wires leading to a logic analyser.
 
 
   \subsection{Scaling of Logic Implementations}
@@ -469,7 +532,7 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
         \item Mem: Total RAM used by Yosys to synthesise design.
       \end{itemize}
 
-      \begin{table}
+      \begin{table}[H]
         \centering
         \begin{tabular}{|c||c|c|c|c|c|c|c|c|c|}
           \hline
@@ -506,7 +569,7 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
         \label{table:urng_bx}
       \end{table}
 
-      \begin{table}
+      \begin{table}[H]
         \centering
         \begin{tabular}{|c||c|c|c|c|c|c|c|c|c|}
           \hline
@@ -527,7 +590,7 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
         \label{table:rng_by}
       \end{table}
 
-      \begin{table}
+      \begin{table}[H]
         \centering
         \begin{tabular}{|c||c|c|c|c|c|c|c|c|c|}
           \hline
@@ -554,12 +617,6 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
     \textit{$\langle$ TODO: investigate how URNG and RNG logic implementations scale with various parameters (and how this compares to a naive implementation)$\rangle$}\\
 
     \textit{$\langle$ TODO: investigate scaling of adder hardware (inferred from Verilog vs iCE40 hardware accumulators)$\rangle$}
-    \subsubsection{Uniform Random Number Generator}
-
-
-    \subsubsection{Inversion Method Random Number Generator}
-
-
 \newpage
 
 
