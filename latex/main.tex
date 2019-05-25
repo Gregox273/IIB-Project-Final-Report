@@ -259,7 +259,7 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
 
       The circuit used in this noise generator is based on a design by Professor Paul Horowitz~\cite[p.~984]{art_of_electronics}, modified to operate at 3.3V and 0V power rails (rather than $\pm5V$). Avalanche noise produced by a reverse biased base-emitter junction of a 2N4401 transistor is amplified through a dual op-amp amplifier stage before being modulated about a 1.65V DC bias $\left(\frac{V_{cc}}{2}\right)$; this output can then be fed into one of the iCE40's comparator inputs. A second output on the PCB comes from a simple potentiometer circuit to set the common mode reference voltage on the second comparator input (with series resistors to allow for fine control about $\frac{V_{cc}}{2}$). Since the comparator output depends on whether the instantaneous voltage of the noise waveform lies above or below this reference voltage, this reference point can be adjusted to set the ratio of ones to zeros in the random comparator output.\\
 
-      The Art of Electronics~\cite[p.~984]{art_of_electronics} describes the noise produced by the circuit as being spectrally white up to around 50MHz, with a 100mVrms output signal.
+      The Art of Electronics~\cite[p.~984]{art_of_electronics} describes the avalanche noise produced by the circuit as being spectrally white up to around 50MHz, whilst the output signal has a 100mV RMS voltage.
 
       \begin{figure}[H]
         \centering
@@ -330,10 +330,11 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
 
     \begin{figure}[H]
       \centering
-      \includegraphics[width=0.8\textwidth]{fig/commits.png}
+      \includegraphics[width=\textwidth]{fig/commits.png}
       \caption{Example of the commit history for the main project repository (Newton-Verilog-Compiler).}
       \label{fig:commits}
     \end{figure}
+    \clearpage
 
   \subsection{FPGA Synthesis Toolchain}
     The author used the open source Project IceStorm~\cite{icestorm} toolchain to synthesise Verilog code and to program the iCE40 FPGA. The following tools in the toolchain were used over the course of the project:
@@ -357,7 +358,7 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
     Throughout this project, the author made extensive use of the \texttt{make} tool for Linux, simplifying the compilation/synthesis process:
     \begin{itemize}
       \item The C program is compiled by running \texttt{make} in the \texttt{c\_compiler} directory. It can then be run with \texttt{build/c\_compiler}.
-      \item Once the C program has been run to generate the necessary Verilog header files and \texttt{.mem} BRAM initialisation value, the Verilog code for the nonuniform random number generator can be synthesised by running \texttt{make synthrng} in the \texttt{c\_compiler/verilog} directory. Alternatively \texttt{make simrng} can be used to simulate it, running a  Verilog testbench. Similar commands (\texttt{make synthclz}, \texttt{make simclz}) can be used to synthesise/test the leading zero counter logic in isolation.
+      \item Once the C program has been run to generate the necessary Verilog header files and \texttt{.mem} BRAM initialisation value, the Verilog code for the nonuniform random number generator can be synthesised by running \texttt{make synthrng} in the \texttt{c\_compiler/verilog} directory. Alternatively \texttt{make simrng} can be used to simulate it, running a  Verilog testbench. Similar commands (\texttt{make synthclz}/ \texttt{make simclz}) can be used to synthesise/test the leading zero counter logic in isolation.
     \end{itemize}
 
 \newpage
@@ -379,7 +380,7 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
     \end{figure}
 
     \subsubsection{Method}
-    This section presents measurements taken at several test points in the assembled circuit, analysing the noise signal at each stage in the amplifier circuit. A schematic is available in Appendix \ref{appendix:schematic}, showing the locations of these test points within the circuit. The author measured and recorded voltage waveforms at each of the testpoints listed below using a Tektronix MDO4104C oscilloscope with both AC and DC probe coupling --- DC coupling was used for the waveform screenshots shown below, (as well as for taking the average voltage measurements shown in the screenshots), whilst AC coupling was used for $V_{RMS}$ measurements. When displaying the FFT of signals on the oscilloscope, the author used a rectangular window function since the noise spectrum was predicted to be fairly wide (white up to around 50MHz~\cite[p.~984]{art_of_electronics}).
+    This section presents measurements taken at several test points in the assembled circuit, analysing the noise signal at each stage in the amplifier circuit. A schematic is available in Appendix \ref{appendix:schematic}, showing the locations of these test points within the circuit. The author measured and recorded voltage waveforms at each of the testpoints listed below using a Tektronix MDO4104C oscilloscope with both AC and DC probe coupling --- DC coupling was used for the waveform screenshots shown below, (as well as for taking the average voltage measurements shown in the screenshots), whilst AC coupling was used for $V_{RMS}$ measurements. When displaying the FFT of signals on the oscilloscope, the author used a rectangular window function since the noise spectrum was predicted to be fairly wide (The Art of Electronics describes the avalanche noise as being white up to 50MHz~\cite[p.~984]{art_of_electronics}, whilst the op-amps used in this circuit have a gain-bandwidth product of 23MHz~\cite{lt1215}).
 
     \newpage
     \subsubsection{Results}
@@ -413,9 +414,10 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
 
         \begin{figure}[H]
           \centering
-          \subfloat[Time domain]{\includegraphics[width=0.7\textwidth]{fig/tp2_yt.png}}
+          \subfloat[Time domain]{\includegraphics[width=0.65\textwidth]{fig/tp2_yt.png}}
           \qquad
-          \subfloat[Frequency domain]{\includegraphics[width=0.7\textwidth]{fig/tp2_f_wide.png}}
+          \subfloat[Frequency domain]{\includegraphics[width=0.65\textwidth]{fig/tp2_f_wide.png}}
+          \caption{TP2}
           \label{fig:tp2_waveforms}
         \end{figure}
         \setcounter{subfigure}{0}
@@ -433,6 +435,7 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
           \subfloat[Time domain]{\includegraphics[width=0.7\textwidth]{fig/tp4_yt.png}}
           \qquad
           \subfloat[Frequency domain]{\includegraphics[width=0.7\textwidth]{fig/tp4_f_wide.png}}
+          \caption{TP4}
           \label{fig:tp4_waveforms}
         \end{figure}
         \setcounter{subfigure}{0}
@@ -449,6 +452,7 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
           \subfloat[Time domain]{\includegraphics[width=0.7\textwidth]{fig/tp8_yt.png}}
           \qquad
           \subfloat[Frequency domain]{\includegraphics[width=0.7\textwidth]{fig/tp8_f.png}}
+          \caption{TP8}
           \label{fig:tp8_waveforms}
         \end{figure}
         \setcounter{subfigure}{0}
@@ -465,6 +469,7 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
           \subfloat[Time domain]{\includegraphics[width=0.7\textwidth]{fig/tp9_yt.png}}
           \qquad
           \subfloat[Frequency domain]{\includegraphics[width=0.7\textwidth]{fig/tp9_f.png}}
+          \caption{TP9}
           \label{fig:tp9_waveforms}
         \end{figure}
         \setcounter{subfigure}{0}
@@ -481,6 +486,7 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
           \subfloat[Time domain]{\includegraphics[width=0.7\textwidth]{fig/tp10_yt.png}}
           \qquad
           \subfloat[Frequency domain]{\includegraphics[width=0.7\textwidth]{fig/tp10_f.png}}
+          \caption{TP10}
           \label{fig:tp10_waveforms}
         \end{figure}
         \setcounter{subfigure}{0}
@@ -488,8 +494,14 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
     \subsubsection{Discussion}
       These measurements suggest that at lower frequencies, the circuit behaves as intended:
       \begin{itemize}
-        \item
+        \item From TP2 to TP4, the signal has similar $V_{RMS}$ whilst the DC bias voltage goes from 7.85V to 6V. This is expected since the signal has passed through an AC coupling capacitor, with a 6V bias set on the output side by a potential divider.
+        \item The transition from TP4 to TP8 shows the effect of the first op-amp stage; $V_{RMS}$ increases whilst the DC bias voltage remains at 6V.
+        \item The second op-amp stage lies between test points 8 and 9. Again $V_{RMS}$ increases whilst $V_{av}$ remains at 6V.
+        \item Between TP9 and TP10, there is a final AC coupling stage to modulate the AC noise signal about a 1.65V DC voltage ($V_{cc}$/2 for connecting to one of the iCE40 comparator inputs). This appears to have little impact on $V_{RMS}$.
       \end{itemize}
+
+      The frequency domain plots (Figures \ref{fig:tp8_waveforms} and \ref{fig:tp9_waveforms}) show that the op-amp gain falls to unity at around 10MHz --- this agrees with the plot of voltage gain vs frequency in the device's datasheet~\cite{lt1215}. The output $V_{RMS}$ unexpectedly appears much higher than the 100mV stated in The Art of Electronics~\cite[p.~984]{art_of_electronics}.
+
       % One problem identified during testing was the tendency for the 12V boost regulator's inductor to get very hot during operation; whilst the circuit still functions in a room temperature environment, a further prototype iteration would use an inductor with a higher current rating to improve reliability. This might require a redesign of the PCB to accommodate a larger inductor package and footprint, although similarly sized alternatives are available\footnote{e.g. Coilcraft XAL4030-472MEC with a 5.1A RMS current rating, compared to the 1.2A for the Wurth Elektronik 744031004 currently being used. The datasheet for the ST8R00 step-up regulator states an absolute maximum inductor current of 3A~\cite{ST8R00}.}.
 
   \subsection{Randomness Testing} \label{subsection:eval_randomness}
@@ -675,7 +687,7 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
   \subsection{Future Work}
     The most obvious path for future work is to continue with the implemenatation of the system outlined above, in order to reduce a working prototype. As a research project, the characterisation work described in Section \ref{section:characterisation} was prioritised over working towards a working prototype, for the purposes of inspiring future research.\\
 
-    One potential area for future research is the application of the Newton language to safeguarding against \textit{transduction attacks} (attacks on a computer system performed by manipulating transducers i.e. sensors in the system). This idea was briefly investigated by the author in parallel to this project, resulting in the publication of a poster~\cite{eurosys_poster} presented by the author at EuroSys 2019 in Dresden. The overall idea behind the poster was that Newton could be used to describe plausible system behaviour (e.g. constraints imposed by physical laws governing the system), thereby allowing implausible behaviour to be recognised and interpreted as a possible transduction attack in progress. The poster is summarised in Appendix \ref{poster_appendix}.\\
+    One potential area for future research is the application of the Newton language to safeguarding against \textit{transduction attacks} (attacks on a computer system performed by manipulating transducers i.e. sensors in the system). This idea was briefly investigated by the author in parallel to this project, resulting in the publication of a poster~\cite{eurosys_poster} presented by the author at EuroSys 2019 in Dresden. The overall idea behind the poster was that Newton could be used to describe plausible system behaviour (e.g. constraints imposed by physical laws governing the system), thereby allowing implausible behaviour to be recognised and interpreted as a possible transduction attack in progress. The poster is summarised in Appendix \ref{poster_appendix}.
 
 
 \newpage
