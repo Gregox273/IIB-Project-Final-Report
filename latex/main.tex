@@ -213,7 +213,7 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
   \subsection{Multi-Sensor Differential Privacy Loss} \label{multi_sensor_differential_privacy_loss_section}
 
 \section{System Design and Implementation}
-  \subsection{Privacy Budget Management System Architecture}
+  \subsection{Privacy Budget Management System Architecture} \label{subsection:privacy_budget_system_arch}
     The following section proposes a privacy management system architecture that could be used to manage multi-sensor privacy on an FPGA. Due to project time constraints, the system has not been completely implemented, since this would divert time and attention away from investigating the more important research questions posed by the project. The progress made so far by the author is documented in sections \ref{section:tech} and \ref{section:characterisation}.
     \\
     \textit{$\langle$ TODO: describe what will have been implemented by the submission date e.g. use privacy yaml file and Newton AST to generate some of the logic implementation by filling in a Verilog template$\rangle$}
@@ -285,7 +285,7 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
 
         The circuit runs until the output register is filled, at which point the internal enable (\textit{en}) register is set from 1 to 0; to generate a new random number the module must be reset.\\
 
-        The GitHub repository for the URNG contains a Verilog testbench that can be run with the command `make simurng' to successfully simulate and test this logic circuit. The circuit has also been successfully synthesised for an iCE40 UP5K FPGA; a detailed analysis is presented in Section \ref{subsection:scaling}.
+        The GitHub repository for the URNG contains a Verilog testbench that can be run with the command \texttt{make simurng} to successfully simulate and test this logic circuit. The circuit has also been successfully synthesised for an iCE40 UP5K FPGA; a detailed analysis is presented in Section \ref{subsection:scaling}.
 
       \subsection{Inversion Method Random Number Generator} \label{subsection:rng_impl}
         \begin{figure}[H]
@@ -310,12 +310,12 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
 %
 
 \section{Technologies and Techniques Used} \label{section:tech}
-  \subsection{GitHub} \label{subsection:GitHub}
+  \subsection{Git/GitHub} \label{subsection:GitHub}
     Below is a list of GitHub repositories containing work done as part of this project:
     \begin{itemize}
-        \item Main project repository containing Python simulations/tests, Verilog templates and C code:\\
+        \item Main project repository containing Python simulations/tests, Verilog templates, Verilog hardware descriptions (e.g. the nonuniform random number generator) and C code:\\
         \url{https://github.com/Gregox273/Newton-Verilog-Compiler}
-        \item Verilog repository for iCE40 differential I/O based uniform random number generator:\\
+        \item Verilog repository for the iCE40 differential I/O based uniform random number generator:\\
         \url{https://github.com/physical-computation/iCE40-LVDS-RNG}
         \item Schematic and PCB design for hardware random noise generator:\\
         \url{https://github.com/Gregox273/hardware-rng}
@@ -326,28 +326,46 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
 
     \end{itemize}
 
-    
+    Over the course of this project, GitHub provided a remote location to store/backup work and transfer it between computers. Git's version control functionality facilitated development of software, Verilog firmware and documentation by allowing work to be divided up into commits that could be merged/rolled back/compared when necessary. The Git commit history also provides a timeline of project progress --- an example is shown in Figure \ref{fig:commits}.
 
-    \textit{$\langle$ TODO: include an example of commit history for a repository$\rangle$}
-
-  \subsection{iCE40 FPGA}
-
-  \subsection{Software Prototyping}
+    \begin{figure}[H]
+      \centering
+      \includegraphics[width=0.8\textwidth]{fig/commits.png}
+      \caption{Example of the commit history for the main project repository (Newton-Verilog-Compiler).}
+      \label{fig:commits}
+    \end{figure}
 
   \subsection{FPGA Synthesis Toolchain}
+    The author used the open source Project IceStorm~\cite{icestorm} toolchain to synthesise Verilog code and to program the iCE40 FPGA. The following tools in the toolchain were used over the course of the project:
+    \begin{itemize}
+      \item Yosys: synthesises Verilog to a logic circuit representation.
+      \item Arachne-pnr: place and route tool that maps a logic circuit to physical hardware within the FPGA.
+      \item Icepack: tool for converting ASCII format file (e.g. the arachne-pnr output) to a binary file (bitstream) for programming the iCE40 FPGA.
+      \item Icetime: tool used to analyse signal timings in the circuit to be programmed. One of the useful parameters output by this tool is a value for the maximum clock speed a circuit can be expected to operate at.
+      \item Iceprog: a program used to program an iCE40 FPGA over USB, using an FTDI based programmer present on the board to be programmed.
+    \end{itemize}
 
   \subsection{Main Project Repository Structure and Build System} \label{subsection:build_system}
-    \textit{TODO: talk about C program, parameterised verilog}
+    This section describes the layout of the \textit{Newton-Verilog-Compiler} main project repository, as well as the method used to compile/synthesise code contained within. This repository contains a significant amount of the work carried out as part of this project, but not all of it (see Section \ref{subsection:GitHub}).\\
 
-  \subsection{Verilog Development Techniques}
-    \textit{$\langle$ TODO: describe good practices picked up over the course of this project$\rangle$}
+    At the start of the project, the author decided to use Python scripts to prototype algorithms that would later be implemented in C or Verilog. This was done to aid debugging and testing due to the ease with which a Python script can be paused, inspected and restarted during execution (though it could be argued that a debugger such as gdb allows compiled C programs to be manipulated in a similar way). This Python script can be found in the \texttt{python-diff-priv} directory within the main repository.
+
+    All Verilog modules written over the course of this project are parameterised so that wire/register bit widths can be easily changed without having to rewrite any code. In this repository, parameter values are taken from \texttt{.vh} Verilog header files which can be supplied manually or generated using the C program in the \texttt{c\_compiler} directory --- this program takes the privacy file \texttt{privacy.yaml} (a partial implementation of the \textit{privacy file} described in Section \ref{subsection:privacy_budget_system_arch}) as an input and uses it to generate Verilog header files, by populating a template file. The program also generates the data to be stored in the FPGA's block RAM as part of the random number generator's BRAM lookup table; this data is stored in \texttt{.mem} files that are read in Verilog using the \texttt{\$readmemh} command.\\
+
+    The \texttt{c\_compiler} directory also contains the Verilog code for the nonuniform random number generator.\\
+
+    Throughout this project, the author made extensive use of the \texttt{make} tool for Linux, simplifying the compilation/synthesis process:
+    \begin{itemize}
+      \item The C program is compiled by running \texttt{make} in the \texttt{c\_compiler} directory. It can then be run with \texttt{build/c\_compiler}.
+      \item Once the C program has been run to generate the necessary Verilog header files and \texttt{.mem} BRAM initialisation value, the Verilog code for the nonuniform random number generator can be synthesised by running \texttt{make synthrng} in the \texttt{c\_compiler/verilog} directory. Alternatively \texttt{make simrng} can be used to simulate it, running a  Verilog testbench. Similar commands (\texttt{make synthclz}, \texttt{make simclz}) can be used to synthesise/test the leading zero counter logic in isolation.
+    \end{itemize}
 
 \newpage
 
 
 
 %
-% DELIVERABLES
+% EVALUATION AND CHARACTERISATION
 %
 
 \section{Evaluation and Characterisation} \label{section:characterisation}
@@ -468,7 +486,10 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
         \setcounter{subfigure}{0}
 
     \subsubsection{Discussion}
-
+      These measurements suggest that at lower frequencies, the circuit behaves as intended:
+      \begin{itemize}
+        \item
+      \end{itemize}
       % One problem identified during testing was the tendency for the 12V boost regulator's inductor to get very hot during operation; whilst the circuit still functions in a room temperature environment, a further prototype iteration would use an inductor with a higher current rating to improve reliability. This might require a redesign of the PCB to accommodate a larger inductor package and footprint, although similarly sized alternatives are available\footnote{e.g. Coilcraft XAL4030-472MEC with a 5.1A RMS current rating, compared to the 1.2A for the Wurth Elektronik 744031004 currently being used. The datasheet for the ST8R00 step-up regulator states an absolute maximum inductor current of 3A~\cite{ST8R00}.}.
 
   \subsection{Randomness Testing} \label{subsection:eval_randomness}
@@ -539,7 +560,7 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
 
   \subsection{Scaling of Logic Implementations} \label{subsection:scaling}
     \subsubsection{Method}
-      This section presents the results of investigating the effect of random number generator bit width (the number of bits in the output) on the size and complexity of the resulting FPGA implementation. The author used Yosys, a program from the Project IceStorm~\cite{icestorm} toolchain, to synthesise Verilog RTL on a desktop computer\footnote{AMD Ryzen 5 2600X Six-Core Processor 3.60GHz, 16GB RAM.}. The terminal commands used are contained within the Makefiles in the URNG/RNG repositories, allowing these measurments to be repeated by running `make synthurng'/`make synthrng' within the appropriate repository (see Section \ref{subsection:GitHub} for a list of repositories). At the end of the synthesis process, yosys prints statistics for the resulting logic circuit  --- this information is displayed in Section \ref{subsubsection:scaling_results}.
+      This section presents the results of investigating the effect of random number generator bit width (the number of bits in the output) on the size and complexity of the resulting FPGA implementation. The author used Yosys, a program from the Project IceStorm~\cite{icestorm} toolchain, to synthesise Verilog RTL on a desktop computer\footnote{AMD Ryzen 5 2600X Six-Core Processor 3.60GHz, 16GB RAM.}. The terminal commands used are contained within the Makefiles in the URNG/RNG repositories, allowing these measurments to be repeated by running \texttt{make synthurng}/\texttt{make synthrng} within the appropriate repository (see Section \ref{subsection:GitHub} for a list of repositories). At the end of the synthesis process, yosys prints statistics for the resulting logic circuit  --- this information is displayed in Section \ref{subsubsection:scaling_results}.
 
     \subsubsection{Results} \label{subsubsection:scaling_results}
       The following tables are taken from Yosys' output. The table headings are described here~\cite{techlib}:
@@ -761,7 +782,6 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
       & = log \left( \frac{\int_{R_{\hat{X}}} Pr\{X = x_{obs}| \hat{X} = \hat{x}\} Pr\{\hat{X}=\hat{x}|\hat{Y} = \hat{y}_a\} d\hat{x} }{\int_{R_{\hat{X}}} Pr\{X = x_{obs}| \hat{X} = \hat{x}\} Pr\{\hat{X}=\hat{x}|\hat{Y} = \hat{y}_b\} d\hat{x} }\right) \label{eqn:priv_loss_y_hat_final},
     \end{align}
     for $\hat{y}_a, \hat{y}_b = \argmax_{\hat{y}_a, \hat{y}_b}(l_{\hat{Y}})$ as before.
-
   %
   % NOISE GENERATOR SCHEMATIC AND PCB LAYOUT
   %
@@ -770,7 +790,7 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
   \vspace{-1cm}
     \begin{figure}[H]
       \centering
-      \includegraphics[angle=90,width=\textwidth]{fig/schematic.pdf}
+      \includegraphics[angle=90,width=0.9\textwidth]{fig/schematic.pdf}
       \label{fig:schematic}
     \end{figure}
 
