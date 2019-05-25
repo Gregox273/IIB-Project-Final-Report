@@ -3,7 +3,7 @@
 % 24cm \footskip 1cm
 \usepackage[british]{babel}
 \usepackage{epsfig}
-\usepackage{amsmath,graphicx,psfrag,pstricks,float,amssymb,fancyhdr,pdfpages, hyperref, enumitem, listings, subfig, diagbox, appendix, lastpage, bm}
+\usepackage{amsmath,graphicx,psfrag,pstricks,float,amssymb,fancyhdr,pdfpages, hyperref, enumitem, listings, subfig, diagbox, appendix, lastpage, bm, graphicx}
 \usepackage[backend=biber, sorting=none]{biblatex}
 % \usepackage[sorting=none]{biblatex}
 \usepackage[margin=25mm]{geometry}
@@ -254,10 +254,24 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
       \end{itemize}
 
     \subsection{Uniform Random Number Generator}
-      \textit{$\langle$ TODO: insert block diagram$\rangle$}
+      \begin{figure}[H]
+        \centering
+        \includegraphics[width=\textwidth]{fig/urng.pdf}
+        \caption{Block diagram of URNG logic circuit.}
+        \label{fig:urng_block_diagram}
+      \end{figure}
+
+      \textit{$\langle$ TODO: discuss block diagram$\rangle$}
 
     \subsection{Inversion Method Random Number Generator}
-      \textit{$\langle$ TODO: insert block diagram$\rangle$}
+      \begin{figure}[H]
+        \centering
+        \includegraphics[width=\textwidth]{fig/rng.pdf}
+        \caption{Block diagram of RNG logic circuit.}
+        \label{fig:rng_block_diagram}
+      \end{figure}
+
+      \textit{$\langle$ TODO: discuss block diagram$\rangle$}
 
 \newpage
 
