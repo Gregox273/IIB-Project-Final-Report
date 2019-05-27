@@ -84,20 +84,17 @@ Gregory Brooks, gb510, Christ's College
 \rule{15.7cm}{0.5mm}
 \vspace{1cm}
 
-\textit{$\langle$ TODO: write this last$\rangle$}
+This project investigates the idea of using the Newton~\cite{Newton} physics description language as part of a multi-sensor embedded local differential privacy system implemented on a small, low power iCE40 FPGA~\cite{iCE40}. The aim of such a system is to allow for quantitative control over the amount of information released about private data such sensor measurements. Differential privacy~\cite{dwork2010differential} can be described as a technique whereby information about an individual is obscured whilst still providing useful information about a statistical population as a whole. For example, adding zero mean noise to datapoints in a database obscures individual entries but preserves the mean of those entries.\\
 
-This project investigates the idea of using the Newton~\cite{Newton} physics description language as part of a multi-sensor embedded local differential privacy system implemented on an iCE40 FPGA.
-\textit{$\langle$ TODO: tidy up the above and expand on it if necessary$\rangle$}
+Such a system would require knowledge of the relationships between the measurements it takes; this information could be provided using the \textit{Newton} physics description language~\cite{Newton}. A backend for the Newton language compiler could then use this information to generate a logic circuit description (in a hardware description language such as Verilog) to implement this differential privacy system on an FPGA. Existing work focuses on embedded systems with a single sensor~\cite{Choi2018GuaranteeingLD}.\\
 
-\subsection{System Specification}
-  \textit{$\langle$ TODO: move to technical abstract?$\rangle$}
+Over the course of this project, the author has proposed a multi-sensor differential privacy algorithm and begun implementing it as a system consisting of a Verilog HDL template filled in by a C program that modifies the resulting hardware description based on a variety of privacy related parameters supplied to the program by a user --- this software represents the compiler backend in the system proposed above. The author has also performed a detailed mathematical analysis of the differential privacy problem applied to a multi-sensor system, basing work off the state of the art for a single sensor embedded system~\cite{Choi2018GuaranteeingLD} --- this work has yielded both an exact expression and a more easily calculated upper bound on the quantitative privacy \textit{loss} experienced by a private signal when information is revealed about related signals.\\
 
-  %
-  % SYSTEM DIAGRAM
-  %
+Over the course of this project, research efforts have focused on implementing a true random number generator on the iCE40 FPGA, a critical component of the proposed differential privacy system. The author has designed and evaluated a hardware entropy source (providing amplified avalanche noise from a PNP transistor acting as an avalanche diode), as well as Verilog code that extracts both uniformly and nonuniformly distributed random numbers from this noise source, using the iCE40's input comparator hardware to digitise the analog entropy source.\\
 
-  \subsection{System Diagram}
-    \textit{$\langle$ TODO: insert block diagram of system and describe which parts have been the focus of this project$\rangle$}
+Analysis of the random number generator system indicates that the output does indeed appear random (when run through the NIST statistical test suite\cite{nist_test_suite}~\cite{arcetri_sts}), and simulations of the uniform (URNG) and nonuniform (RNG) random number generators appear to behave as intended. The logic circuits synthesised from the URNG and RNG hardware descriptions have been implemented in a hardware efficient manner (i.e. use relatively few of the limited hardware resources present in the iCE40 FPGA) combining several ideas from the existing state of the art~\cite{DeSchryver}~\cite{clz} --- the rate at which hardware resource usage scales with URNG/RNG output bit width was investigated as part of this project.\\
+
+To conclude, this project has investigated the use of an iCE40 FPGA and the Newton physics description language as part of a differential privacy system for a multi-sensor embedded system. The author has derived both exact and upper bound expressions for quantifying \textit{privacy loss} in this context, and has proposed an architecture for this differential privacy system. The random number generation component of this architecture has been implemented in Verilog and C; statistical testing suggests that its output is indeed random and the hardware implementation appears to scale well with URNG bit width, indicating efficient use of the iCE40 FPGA's hardware resources (though the use of the iCE40s hardware DSP blocks for performing arithmetic could reduce resource usage even further).
 
 
 \newpage
@@ -156,7 +153,7 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
 
     \begin{figure}[H]
       \centering
-      \includegraphics[width=0.75\textwidth]{fig/resonating_board.png}
+      \includegraphics[width=\textwidth]{fig/resonating_board.png}
       \caption{The system modelled by Equation \ref{eqn:board_resonance}. Figure sourced from a poster produced in parallel to this project~\cite{eurosys_poster}.}
       \label{fig:resonating_board}
     \end{figure}
@@ -164,7 +161,10 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
     At the time of writing the Newton language and compiler is still under development by the Physical Computation Laboratory~\cite{physcomp}; the Newton compiler frontend is able to transform a human-readable Newton description into an intermediate representation, a tree structure that can be easily traversed by a computer. The motivation for this project was the idea that this information could be used by a compiler backend to generate a hardware description (e.g. Verilog). Within the context of this project, Newton provides the ability to describe the relationships between the sensors in a multi-sensor embedded system. This information is necessary to be able to quantify privacy losses in a multi-sensor system.
 
   \subsection{Random Number Generation} \label{subsection:intro_rng}
-    One important component of a local differential privacy system is a true random number generator (TRNG) to generate the random noise used to obscure \textit{private} data\footnote{In a security related application, pseudorandom number generators such as linear feedback shift registers are unsuitable since an attacker would be able to predict their output}. The Laplace mechanism requires random noise to be Laplace distributed, introducing additional complexity compared to uniform or Gaussian distributed RNGs. The resource constraints imposed by the iCE40 FPGA dictated the need to implement a hardware efficient RNG to generate this Laplace distributed noise. A research article by De Schryver et al.~\cite{DeSchryver} outlines a possible architecture for such a system, based on a lookup table indexed by a floating point representation of the output of a uniform random number generator. This architecture was implemented in Verilog and analysed as part of this project (see Section \ref{subsection:rng_impl}).
+    One important component of a local differential privacy system is a true random number generator (TRNG) to generate the random noise used to obscure \textit{private} data\footnote{In a security related application, pseudorandom number generators such as linear feedback shift registers are unsuitable since an attacker would be able to predict their output}. The Laplace mechanism requires random noise to be Laplace distributed, introducing additional complexity compared to uniform or Gaussian distributed RNGs. The resource constraints imposed by the iCE40 FPGA dictated the need to implement a hardware efficient RNG to generate this Laplace distributed noise.\\
+
+    A research article by De Schryver et al.~\cite{DeSchryver} outlines a possible architecture for such a system, based on a lookup table indexed by a floating point representation of the output of a uniform random number generator. This architecture was implemented in Verilog and analysed as part of this project (see Section \ref{subsection:rng_impl}). It is important to note that his architecture requires a uniform random number generator (URNG) input (uniform random numbers are transformed to an output from the target distribution e.g. the Laplace distribution) --- Sections \ref{subsection:hardware_entropy_source} and \ref{subsection:urng_impl} present a URNG implemented as part of this project.
+
 \newpage
 
 
@@ -210,11 +210,7 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
 
 \section{System Design and Implementation}
   \subsection{Privacy Budget Management System Architecture} \label{subsection:privacy_budget_system_arch}
-    The following section proposes a privacy management system architecture that could be used to manage multi-sensor privacy on an FPGA. Due to project time constraints, the system has not been completely implemented, since this would divert time and attention away from investigating the more important research questions posed by the project. The progress made so far by the author is documented in sections \ref{section:tech} and \ref{section:characterisation}.
-    \\
-
-    \textit{$\langle$ TODO: describe what will have been implemented by the submission date e.g. use privacy yaml file and Newton AST to generate some of the logic implementation by filling in a Verilog template$\rangle$}
-    \\
+    The following section proposes a privacy management system architecture that could be used to manage multi-sensor privacy on an FPGA. Due to project time constraints, the system has not been completely implemented, since this would divert time and attention away from investigating the more important research questions posed by the project. The progress made so far by the author is documented in Sections \ref{section:tech} and \ref{section:characterisation}.\\
 
     The proposed system architecture is as follows:
     \begin{itemize}
@@ -582,7 +578,7 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
       This section presents the results of investigating the effect of random number generator bit width (the number of bits in the output) on the size and complexity of the resulting FPGA implementation. The author used Yosys, a program from the Project IceStorm~\cite{icestorm} toolchain, to synthesise Verilog RTL on a desktop computer\footnote{AMD Ryzen 5 2600X Six-Core Processor 3.60GHz, 16GB RAM.}. The terminal commands used are contained within the Makefiles in the URNG/RNG repositories, allowing these measurments to be repeated by running \texttt{make synthurng}/\texttt{make synthrng} within the appropriate repository (see Section \ref{subsection:GitHub} for a list of repositories). At the end of the synthesis process, yosys prints statistics for the resulting logic circuit  --- this information is displayed in Section \ref{subsubsection:scaling_results}.
 
     \subsubsection{Results} \label{subsubsection:scaling_results}
-      The following tables are taken from Yosys' output. The table headings are described here~\cite{techlib}:
+      The following results are taken from Yosys' output. Terminology is defined here~\cite{techlib}:
       \begin{itemize}
         \item Wires: The number of wires in the circuit where the multibit WIRE[X:0] counts as a single wire.
         \item Bits: The number of wire bits in the circuit where the multibit WIRE[X:0] consists of X+1 wire bits.
@@ -624,12 +620,21 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
           \hline
           32 & 85 & 193 & 4 & 35 & 41 & 71 & 0.73, 0.19 & 29.55\\
           \hline
+          48 & 108 & 273 & 7 & 51 & 58 & 93 & 1.38, 0.33 & 29.95\\
+          \hline
           64 & 119 & 326 & 5 & 67 & 74 & 106 & 1.14, 0.25 & 30.50\\
           \hline
         \end{tabular}
         \caption{Effect of varying uniform RNG bit width, BX, on logic circuit size. Odd numbered bit widths are printed in italics.}
         \label{table:urng_bx}
       \end{table}
+
+      \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.8\textwidth]{fig/urng_graph.png}
+        \caption{Graph to illustrate how URNG logic cell usage increases with URNG bit width. The graph displays the data in Table \ref{table:urng_bx}.}
+        \label{fig:urng_graph}
+      \end{figure}
 
       \begin{table}[H]
         \centering
@@ -674,22 +679,35 @@ This project investigates the idea of using the Newton~\cite{Newton} physics des
         \caption{Effect of varying the RNG output bit width. The following constant values were used: 4 growing octaves, 3 diminishing octaves, 2 bit subsection address, 3 bit mantissa.}
         \label{table:rng_by}
       \end{table}
+
+      \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.8\textwidth]{fig/rng_graph.png}
+        \caption{Graph to illustrate how RNG logic cell usage increases with RNG bit width.}
+        \label{fig:rng_graph}
+      \end{figure}
+
     \subsubsection{Discussion}
-
+      Overall, these results suggest that the implementation so far scales well with URNG/RNG bit width, since the values in Tables \ref{table:urng_bx} and \ref{table:rng_bx} tend to scale logarithmically ($O(log_2(N))$). Interestingly, Table \ref{table:rng_by} appears to be an exception to this rule, with the number of wire bits and BRAM usage appearing to scale linearly with the RNG output's bit width, whilst the logic cell count appears to scale with order $O(N^2)$. This suggests that, within the RNG module, the final output stages (after the lookup table that perform arithmetic on the coefficients read from BRAM) account for a significant portion of the entire module's hardware complexity, since this is the only part of the module that is affected by output bit width (as opposed to URNG bit width). It is therefore likely that this hardware complexity could be reduced by taking advantage of the iCE40 FPGA's dedicated DSP hardware blocks to perform arithmetic, rather than leaving Yosys to synthesise this logic using general purpose logic cells. Additional work would be required to implement this in a paramterised way that allows for an arbitary output bit width, since the DSP blocks contain 8 and 16 bit multipliers and accumulators.
 \newpage
-
-
 
 %
 % CONCLUSIONS
 %
 
 \section{Conclusions}
+  This report has described investigations into an iCE40 FPGA based differential privacy system for a multi-sensor embedded system. Analysis of the mathematics behind this problem, presented in Appendix \ref{appendix:diff_priv_loss}, has revealed the need for such a system to have knowledge of the relationships between the measurements it takes --- this information could be provided by a \textit{Newton} description of the physical system relating these measurements.\\
 
-  The work done over the course of this project is contained within many different GitHub repositories, which can make it difficult to see how various pieces of work fit together. For a relatively small project such as this, it may have been simpler to keep all work within a single repository, though this would make it more difficult to reuse and/or modify individual components in future research/projects.
+  The mathematical analysis of the multi-sensor differential privacy problem (presented in Appendix \ref{appendix:diff_priv_loss}) has yielded exact and upper bound expressions for quantifying privacy loss in the situation where a noised value for a particular measurement is releaseed, thereby revealing some information about all other related measurement values.\\
+
+  Section \ref{subsection:privacy_budget_system_arch} proposes an architecture for such a system, where a privacy \textit{budget} is maintained for protected measurements and outside agents are able to query an FPGA for masked measurement values. The author produced a Verilog implementation of the random number generator required for such a system; it is presented in Sections \ref{subsection:urng_impl} and \ref{subsection:rng_impl} analysed in detail in Section \ref{subsection:scaling}. The author also designed a hardware entropy source for this RNG subsystem --- it is described in Section \ref{subsection:hardware_entropy_source} and evaluated in Section \ref{subsection:eval_hardware_entropy}. Experimentation indicates that the output does indeed appear random and the synthesised logic circuit resulting from the URNG/RNG Verilog code makes relatively efficient use of FPGA resources (though this could potentially be improved further by utilising the iCE40's hardware DSP blocks to perform arithmetic).
+
+  % The work done over the course of this project is contained within many different GitHub repositories, which can make it difficult to see how various pieces of work fit together. For a relatively small project such as this, it may have been simpler to keep all work within a single repository, though this would make it more difficult to reuse and/or modify individual components in future research/projects.
 
   \subsection{Future Work}
-    The most obvious path for future work is to continue with the implemenatation of the system outlined above, in order to reduce a working prototype. As a research project, the characterisation work described in Section \ref{section:characterisation} was prioritised over working towards a working prototype, for the purposes of inspiring future research.\\
+    The most obvious path for future work is to continue with the implemenatation of the system outlined above, in order to produce a working prototype. As a research project, the characterisation work described in Section \ref{section:characterisation} was prioritised over working towards a working prototype, for the purposes of inspiring future research. Future work could also optimise the existing hardware descriptions e.g. through use of hardware DSP blocks on the FPGA.\\
+
+    As discussed in Section \ref{subsection:eval_randomness}, further resarch could focus on a more detailed analysis of the randomness of the output of the hardware RNG circuit. Improvements could be made to the circuit itself, for example to reduce size and power consumption or to increase the output bandwidth. An improved circuit could be integrated into the Physical Computation department's FPGA development platforms, providing a hardware TRNG for use with other research.\\
 
     One potential area for future research is the application of the Newton language to safeguarding against \textit{transduction attacks} (attacks on a computer system performed by manipulating transducers i.e. sensors in the system). This idea was briefly investigated by the author in parallel to this project, resulting in the publication of a poster~\cite{eurosys_poster} presented by the author at EuroSys 2019 in Dresden. The overall idea behind the poster was that Newton could be used to describe plausible system behaviour (e.g. constraints imposed by physical laws governing the system), thereby allowing implausible behaviour to be recognised and interpreted as a possible transduction attack in progress. The poster is summarised in Appendix \ref{poster_appendix}.
 
